@@ -5,12 +5,79 @@
 
 
 export type paths = {
+  "/api/v1/sessions/": {
+    /**
+     * List Sessions
+     * @deprecated
+     * @description Gets a list of sessions, optionally searching
+     */
+    get: operations["list_sessions"];
+    /**
+     * Create Session
+     * @deprecated
+     * @description Creates a new session, optionally initializing it with an invocation graph
+     */
+    post: operations["create_session"];
+  };
   "/api/v1/sessions/{session_id}": {
     /**
      * Get Session
+     * @deprecated
      * @description Gets a session
      */
     get: operations["get_session"];
+  };
+  "/api/v1/sessions/{session_id}/nodes": {
+    /**
+     * Add Node
+     * @deprecated
+     * @description Adds a node to the graph
+     */
+    post: operations["add_node"];
+  };
+  "/api/v1/sessions/{session_id}/nodes/{node_path}": {
+    /**
+     * Update Node
+     * @deprecated
+     * @description Updates a node in the graph and removes all linked edges
+     */
+    put: operations["update_node"];
+    /**
+     * Delete Node
+     * @deprecated
+     * @description Deletes a node in the graph and removes all linked edges
+     */
+    delete: operations["delete_node"];
+  };
+  "/api/v1/sessions/{session_id}/edges": {
+    /**
+     * Add Edge
+     * @deprecated
+     * @description Adds an edge to the graph
+     */
+    post: operations["add_edge"];
+  };
+  "/api/v1/sessions/{session_id}/edges/{from_node_id}/{from_field}/{to_node_id}/{to_field}": {
+    /**
+     * Delete Edge
+     * @deprecated
+     * @description Deletes an edge from the graph
+     */
+    delete: operations["delete_edge"];
+  };
+  "/api/v1/sessions/{session_id}/invoke": {
+    /**
+     * Invoke Session
+     * @deprecated
+     * @description Invokes a session
+     */
+    put: operations["invoke_session"];
+    /**
+     * Cancel Session Invoke
+     * @deprecated
+     * @description Invokes a session
+     */
+    delete: operations["cancel_session_invoke"];
   };
   "/api/v1/utilities/dynamicprompts": {
     /**
@@ -109,17 +176,12 @@ export type paths = {
      */
     patch: operations["update_image"];
   };
-  "/api/v1/images/intermediates": {
-    /**
-     * Get Intermediates Count
-     * @description Gets the count of intermediate images
-     */
-    get: operations["get_intermediates_count"];
+  "/api/v1/images/clear-intermediates": {
     /**
      * Clear Intermediates
      * @description Clears all intermediates
      */
-    delete: operations["clear_intermediates"];
+    post: operations["clear_intermediates"];
   };
   "/api/v1/images/i/{image_name}/metadata": {
     /**
@@ -287,6 +349,13 @@ export type paths = {
      */
     get: operations["get_invocation_cache_status"];
   };
+  "/api/v1/queue/{queue_id}/enqueue_graph": {
+    /**
+     * Enqueue Graph
+     * @description Enqueues a graph for single execution.
+     */
+    post: operations["enqueue_graph"];
+  };
   "/api/v1/queue/{queue_id}/enqueue_batch": {
     /**
      * Enqueue Batch
@@ -412,18 +481,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * A
        * @description The first number
@@ -437,9 +506,9 @@ export type components = {
        */
       b?: number;
       /**
-       * type
+       * Type
        * @default add
-       * @constant
+       * @enum {string}
        */
       type: "add";
     };
@@ -482,6 +551,7 @@ export type components = {
     };
     /**
      * BaseModelType
+     * @description An enumeration.
      * @enum {string}
      */
     BaseModelType: "any" | "sd-1" | "sd-2" | "sdxl" | "sdxl-refiner";
@@ -496,8 +566,11 @@ export type components = {
        * Data
        * @description The batch data collection.
        */
-      data?: components["schemas"]["BatchDatum"][][] | null;
-      /** @description The graph to initialize the session with */
+      data?: components["schemas"]["BatchDatum"][][];
+      /**
+       * Graph
+       * @description The graph to initialize the session with
+       */
       graph: components["schemas"]["Graph"];
       /**
        * Runs
@@ -582,18 +655,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Width
        * @description The width of the image
@@ -614,19 +687,20 @@ export type components = {
        */
       mode?: "RGB" | "RGBA";
       /**
+       * Color
        * @description The color of the image
        * @default {
-       *   "a": 255,
-       *   "b": 0,
+       *   "r": 0,
        *   "g": 0,
-       *   "r": 0
+       *   "b": 0,
+       *   "a": 255
        * }
        */
       color?: components["schemas"]["ColorField"];
       /**
-       * type
+       * Type
        * @default blank_image
-       * @constant
+       * @enum {string}
        */
       type: "blank_image";
     };
@@ -645,21 +719,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description Latents tensor */
+      use_cache?: boolean;
+      /**
+       * Latents A
+       * @description Latents tensor
+       */
       latents_a?: components["schemas"]["LatentsField"];
-      /** @description Latents tensor */
+      /**
+       * Latents B
+       * @description Latents tensor
+       */
       latents_b?: components["schemas"]["LatentsField"];
       /**
        * Alpha
@@ -668,9 +748,9 @@ export type components = {
        */
       alpha?: number;
       /**
-       * type
+       * Type
        * @default lblend
-       * @constant
+       * @enum {string}
        */
       type: "lblend";
     };
@@ -680,12 +760,12 @@ export type components = {
        * Board Name
        * @description The board's new name.
        */
-      board_name?: string | null;
+      board_name?: string;
       /**
        * Cover Image Name
        * @description The name of the board's new cover image.
        */
-      cover_image_name?: string | null;
+      cover_image_name?: string;
     };
     /**
      * BoardDTO
@@ -716,12 +796,12 @@ export type components = {
        * Deleted At
        * @description The deleted timestamp of the board.
        */
-      deleted_at?: string | null;
+      deleted_at?: string;
       /**
        * Cover Image Name
        * @description The name of the board's cover image.
        */
-      cover_image_name: string | null;
+      cover_image_name?: string;
       /**
        * Image Count
        * @description The number of images in the board.
@@ -792,12 +872,29 @@ export type components = {
        * Board Id
        * @description The board from which image should be downloaded from
        */
-      board_id?: string | null;
+      board_id?: string;
     };
     /** Body_enqueue_batch */
     Body_enqueue_batch: {
-      /** @description Batch to process */
+      /**
+       * Batch
+       * @description Batch to process
+       */
       batch: components["schemas"]["Batch"];
+      /**
+       * Prepend
+       * @description Whether or not to prepend this batch in the queue
+       * @default false
+       */
+      prepend?: boolean;
+    };
+    /** Body_enqueue_graph */
+    Body_enqueue_graph: {
+      /**
+       * Graph
+       * @description The graph to enqueue
+       */
+      graph: components["schemas"]["Graph"];
       /**
        * Prepend
        * @description Whether or not to prepend this batch in the queue
@@ -815,13 +912,41 @@ export type components = {
       /**
        * Prediction Type
        * @description Prediction type for SDv2 checkpoints and rare SDv1 checkpoints
+       * @enum {string}
        */
-      prediction_type?: ("v_prediction" | "epsilon" | "sample") | null;
+      prediction_type?: "v_prediction" | "epsilon" | "sample";
     };
     /** Body_merge_models */
     Body_merge_models: {
-      /** @description Model configuration */
-      body: components["schemas"]["MergeModelsBody"];
+      /**
+       * Model Names
+       * @description model name
+       */
+      model_names: string[];
+      /**
+       * Merged Model Name
+       * @description Name of destination model
+       */
+      merged_model_name: string;
+      /**
+       * Alpha
+       * @description Alpha weighting strength to apply to 2d and 3d models
+       * @default 0.5
+       */
+      alpha?: number;
+      /** @description Interpolation method */
+      interp: components["schemas"]["MergeInterpolationMethod"];
+      /**
+       * Force
+       * @description Force merging of models created with different versions of diffusers
+       * @default false
+       */
+      force?: boolean;
+      /**
+       * Merge Dest Directory
+       * @description Save the merged model to the designated directory (with 'merged_model_name' appended)
+       */
+      merge_dest_directory?: string;
     };
     /** Body_parse_dynamicprompts */
     Body_parse_dynamicprompts: {
@@ -898,27 +1023,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Collection
        * @description The collection of boolean values
        */
       collection?: boolean[];
       /**
-       * type
+       * Type
        * @default boolean_collection
-       * @constant
+       * @enum {string}
        */
       type: "boolean_collection";
     };
@@ -933,9 +1058,9 @@ export type components = {
        */
       collection: boolean[];
       /**
-       * type
+       * Type
        * @default boolean_collection_output
-       * @constant
+       * @enum {string}
        */
       type: "boolean_collection_output";
     };
@@ -954,18 +1079,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Value
        * @description The boolean value
@@ -973,9 +1098,9 @@ export type components = {
        */
       value?: boolean;
       /**
-       * type
+       * Type
        * @default boolean
-       * @constant
+       * @enum {string}
        */
       type: "boolean";
     };
@@ -990,9 +1115,9 @@ export type components = {
        */
       value: boolean;
       /**
-       * type
+       * Type
        * @default boolean_output
-       * @constant
+       * @enum {string}
        */
       type: "boolean_output";
     };
@@ -1003,20 +1128,19 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default clip_vision
-       * @constant
+       * @enum {string}
        */
       model_type: "clip_vision";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /**
        * Model Format
-       * @constant
+       * @enum {string}
        */
       model_format: "diffusers";
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
     };
     /** CLIPVisionModelField */
     CLIPVisionModelField: {
@@ -1043,24 +1167,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to infill */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to infill
+       */
       image?: components["schemas"]["ImageField"];
       /**
-       * type
+       * Type
        * @default infill_cv2
-       * @constant
+       * @enum {string}
        */
       type: "infill_cv2";
     };
@@ -1090,20 +1217,29 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default canny_image_processor
+       * @enum {string}
+       */
+      type: "canny_image_processor";
       /**
        * Low Threshold
        * @description The low threshold of the Canny pixel gradient (0-255)
@@ -1116,12 +1252,6 @@ export type components = {
        * @default 200
        */
       high_threshold?: number;
-      /**
-       * type
-       * @default canny_image_processor
-       * @constant
-       */
-      type: "canny_image_processor";
     };
     /**
      * ClearResult
@@ -1136,9 +1266,15 @@ export type components = {
     };
     /** ClipField */
     ClipField: {
-      /** @description Info to load tokenizer submodel */
+      /**
+       * Tokenizer
+       * @description Info to load tokenizer submodel
+       */
       tokenizer: components["schemas"]["ModelInfo"];
-      /** @description Info to load text_encoder submodel */
+      /**
+       * Text Encoder
+       * @description Info to load text_encoder submodel
+       */
       text_encoder: components["schemas"]["ModelInfo"];
       /**
        * Skipped Layers
@@ -1166,18 +1302,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * CLIP
        * @description CLIP (tokenizer, text encoder, LoRAs) and skipped layer count
@@ -1190,9 +1326,9 @@ export type components = {
        */
       skipped_layers?: number;
       /**
-       * type
+       * Type
        * @default clip_skip
-       * @constant
+       * @enum {string}
        */
       type: "clip_skip";
     };
@@ -1205,11 +1341,11 @@ export type components = {
        * CLIP
        * @description CLIP (tokenizer, text encoder, LoRAs) and skipped layer count
        */
-      clip?: components["schemas"]["ClipField"] | null;
+      clip?: components["schemas"]["ClipField"];
       /**
-       * type
+       * Type
        * @default clip_skip_output
-       * @constant
+       * @enum {string}
        */
       type: "clip_skip_output";
     };
@@ -1228,18 +1364,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Collection Item
        * @description The item to collect (all inputs must be of the same type)
@@ -1251,13 +1387,18 @@ export type components = {
        */
       collection?: unknown[];
       /**
-       * type
+       * Type
        * @default collect
-       * @constant
+       * @enum {string}
        */
       type: "collect";
     };
-    /** CollectInvocationOutput */
+    /**
+     * CollectInvocationOutput
+     * @description Base class for all invocation outputs.
+     *
+     * All invocation outputs must use the `@invocation_output` decorator to provide their unique type.
+     */
     CollectInvocationOutput: {
       /**
        * Collection
@@ -1265,9 +1406,9 @@ export type components = {
        */
       collection: unknown[];
       /**
-       * type
+       * Type
        * @default collect_output
-       * @constant
+       * @enum {string}
        */
       type: "collect_output";
     };
@@ -1282,9 +1423,9 @@ export type components = {
        */
       collection: components["schemas"]["ColorField"][];
       /**
-       * type
+       * Type
        * @default color_collection_output
-       * @constant
+       * @enum {string}
        */
       type: "color_collection_output";
     };
@@ -1304,24 +1445,33 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to color-correct */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to color-correct
+       */
       image?: components["schemas"]["ImageField"];
-      /** @description Reference image for color-correction */
+      /**
+       * Reference
+       * @description Reference image for color-correction
+       */
       reference?: components["schemas"]["ImageField"];
-      /** @description Mask to use when applying color-correction */
-      mask?: components["schemas"]["ImageField"] | null;
+      /**
+       * Mask
+       * @description Mask to use when applying color-correction
+       */
+      mask?: components["schemas"]["ImageField"];
       /**
        * Mask Blur Radius
        * @description Mask blur radius
@@ -1329,9 +1479,9 @@ export type components = {
        */
       mask_blur_radius?: number;
       /**
-       * type
+       * Type
        * @default color_correct
-       * @constant
+       * @enum {string}
        */
       type: "color_correct";
     };
@@ -1376,32 +1526,33 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
+       * Color
        * @description The color value
        * @default {
-       *   "a": 255,
-       *   "b": 0,
+       *   "r": 0,
        *   "g": 0,
-       *   "r": 0
+       *   "b": 0,
+       *   "a": 255
        * }
        */
       color?: components["schemas"]["ColorField"];
       /**
-       * type
+       * Type
        * @default color
-       * @constant
+       * @enum {string}
        */
       type: "color";
     };
@@ -1420,44 +1571,50 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default color_map_image_processor
+       * @enum {string}
+       */
+      type: "color_map_image_processor";
       /**
        * Color Map Tile Size
        * @description Tile size
        * @default 64
        */
       color_map_tile_size?: number;
-      /**
-       * type
-       * @default color_map_image_processor
-       * @constant
-       */
-      type: "color_map_image_processor";
     };
     /**
      * ColorOutput
      * @description Base class for nodes that output a single color
      */
     ColorOutput: {
-      /** @description The output color */
+      /**
+       * Color
+       * @description The output color
+       */
       color: components["schemas"]["ColorField"];
       /**
-       * type
+       * Type
        * @default color_output
-       * @constant
+       * @enum {string}
        */
       type: "color_output";
     };
@@ -1476,18 +1633,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Prompt
        * @description Prompt to be parsed by Compel to create a conditioning tensor
@@ -1495,16 +1652,16 @@ export type components = {
        */
       prompt?: string;
       /**
+       * Type
+       * @default compel
+       * @enum {string}
+       */
+      type: "compel";
+      /**
        * CLIP
        * @description CLIP (tokenizer, text encoder, LoRAs) and skipped layer count
        */
       clip?: components["schemas"]["ClipField"];
-      /**
-       * type
-       * @default compel
-       * @constant
-       */
-      type: "compel";
     };
     /**
      * Conditioning Collection Primitive
@@ -1521,27 +1678,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Collection
        * @description The collection of conditioning tensors
        */
       collection?: components["schemas"]["ConditioningField"][];
       /**
-       * type
+       * Type
        * @default conditioning_collection
-       * @constant
+       * @enum {string}
        */
       type: "conditioning_collection";
     };
@@ -1556,9 +1713,9 @@ export type components = {
        */
       collection: components["schemas"]["ConditioningField"][];
       /**
-       * type
+       * Type
        * @default conditioning_collection_output
-       * @constant
+       * @enum {string}
        */
       type: "conditioning_collection_output";
     };
@@ -1588,24 +1745,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description Conditioning tensor */
+      use_cache?: boolean;
+      /**
+       * Conditioning
+       * @description Conditioning tensor
+       */
       conditioning?: components["schemas"]["ConditioningField"];
       /**
-       * type
+       * Type
        * @default conditioning
-       * @constant
+       * @enum {string}
        */
       type: "conditioning";
     };
@@ -1614,12 +1774,15 @@ export type components = {
      * @description Base class for nodes that output a single conditioning tensor
      */
     ConditioningOutput: {
-      /** @description Conditioning tensor */
+      /**
+       * Conditioning
+       * @description Conditioning tensor
+       */
       conditioning: components["schemas"]["ConditioningField"];
       /**
-       * type
+       * Type
        * @default conditioning_output
-       * @constant
+       * @enum {string}
        */
       type: "conditioning_output";
     };
@@ -1638,20 +1801,29 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default content_shuffle_image_processor
+       * @enum {string}
+       */
+      type: "content_shuffle_image_processor";
       /**
        * Detect Resolution
        * @description Pixel resolution for detection
@@ -1682,18 +1854,18 @@ export type components = {
        * @default 256
        */
       f?: number;
-      /**
-       * type
-       * @default content_shuffle_image_processor
-       * @constant
-       */
-      type: "content_shuffle_image_processor";
     };
     /** ControlField */
     ControlField: {
-      /** @description The control image */
+      /**
+       * Image
+       * @description The control image
+       */
       image: components["schemas"]["ImageField"];
-      /** @description The ControlNet model to use */
+      /**
+       * Control Model
+       * @description The ControlNet model to use
+       */
       control_model: components["schemas"]["ControlNetModelField"];
       /**
        * Control Weight
@@ -1743,21 +1915,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The control image */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The control image
+       */
       image?: components["schemas"]["ImageField"];
-      /** @description ControlNet model to load */
+      /**
+       * Control Model
+       * @description ControlNet model to load
+       */
       control_model: components["schemas"]["ControlNetModelField"];
       /**
        * Control Weight
@@ -1792,9 +1970,9 @@ export type components = {
        */
       resize_mode?: "just_resize" | "crop_resize" | "fill_resize" | "just_resize_simple";
       /**
-       * type
+       * Type
        * @default controlnet
-       * @constant
+       * @enum {string}
        */
       type: "controlnet";
     };
@@ -1805,20 +1983,19 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default controlnet
-       * @constant
+       * @enum {string}
        */
       model_type: "controlnet";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /**
        * Model Format
-       * @constant
+       * @enum {string}
        */
       model_format: "checkpoint";
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
       /** Config */
       config: string;
     };
@@ -1829,20 +2006,19 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default controlnet
-       * @constant
+       * @enum {string}
        */
       model_type: "controlnet";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /**
        * Model Format
-       * @constant
+       * @enum {string}
        */
       model_format: "diffusers";
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
     };
     /**
      * ControlNetModelField
@@ -1862,12 +2038,15 @@ export type components = {
      * @description node output for ControlNet info
      */
     ControlOutput: {
-      /** @description ControlNet(s) to apply */
+      /**
+       * Control
+       * @description ControlNet(s) to apply
+       */
       control: components["schemas"]["ControlField"];
       /**
-       * type
+       * Type
        * @default control_output
-       * @constant
+       * @enum {string}
        */
       type: "control_output";
     };
@@ -1879,145 +2058,154 @@ export type components = {
       /**
        * App Version
        * @description The version of InvokeAI used to generate this image
-       * @default 3.3.0
+       * @default 3.3.0post2
        */
       app_version?: string;
       /**
        * Generation Mode
        * @description The generation mode that output this image
        */
-      generation_mode?: string | null;
+      generation_mode?: string;
       /**
        * Created By
        * @description The name of the creator of the image
        */
-      created_by?: string | null;
+      created_by?: string;
       /**
        * Positive Prompt
        * @description The positive prompt parameter
        */
-      positive_prompt?: string | null;
+      positive_prompt?: string;
       /**
        * Negative Prompt
        * @description The negative prompt parameter
        */
-      negative_prompt?: string | null;
+      negative_prompt?: string;
       /**
        * Width
        * @description The width parameter
        */
-      width?: number | null;
+      width?: number;
       /**
        * Height
        * @description The height parameter
        */
-      height?: number | null;
+      height?: number;
       /**
        * Seed
        * @description The seed used for noise generation
        */
-      seed?: number | null;
+      seed?: number;
       /**
        * Rand Device
        * @description The device used for random number generation
        */
-      rand_device?: string | null;
+      rand_device?: string;
       /**
        * Cfg Scale
        * @description The classifier-free guidance scale parameter
        */
-      cfg_scale?: number | null;
+      cfg_scale?: number;
       /**
        * Steps
        * @description The number of steps used for inference
        */
-      steps?: number | null;
+      steps?: number;
       /**
        * Scheduler
        * @description The scheduler used for inference
        */
-      scheduler?: string | null;
+      scheduler?: string;
       /**
        * Clip Skip
        * @description The number of skipped CLIP layers
        */
-      clip_skip?: number | null;
-      /** @description The main model used for inference */
-      model?: components["schemas"]["MainModelField"] | null;
+      clip_skip?: number;
+      /**
+       * Model
+       * @description The main model used for inference
+       */
+      model?: components["schemas"]["MainModelField"];
       /**
        * Controlnets
        * @description The ControlNets used for inference
        */
-      controlnets?: components["schemas"]["ControlField"][] | null;
+      controlnets?: components["schemas"]["ControlField"][];
       /**
        * Ipadapters
        * @description The IP Adapters used for inference
        */
-      ipAdapters?: components["schemas"]["IPAdapterMetadataField"][] | null;
+      ipAdapters?: components["schemas"]["IPAdapterMetadataField"][];
       /**
        * T2Iadapters
        * @description The IP Adapters used for inference
        */
-      t2iAdapters?: components["schemas"]["T2IAdapterField"][] | null;
+      t2iAdapters?: components["schemas"]["T2IAdapterField"][];
       /**
        * Loras
        * @description The LoRAs used for inference
        */
-      loras?: components["schemas"]["LoRAMetadataField"][] | null;
-      /** @description The VAE used for decoding, if the main model's default was not used */
-      vae?: components["schemas"]["VAEModelField"] | null;
+      loras?: components["schemas"]["LoRAMetadataField"][];
+      /**
+       * Vae
+       * @description The VAE used for decoding, if the main model's default was not used
+       */
+      vae?: components["schemas"]["VAEModelField"];
       /**
        * Strength
        * @description The strength used for latents-to-latents
        */
-      strength?: number | null;
+      strength?: number;
       /**
        * Init Image
        * @description The name of the initial image
        */
-      init_image?: string | null;
+      init_image?: string;
       /**
        * Positive Style Prompt
        * @description The positive style prompt parameter
        */
-      positive_style_prompt?: string | null;
+      positive_style_prompt?: string;
       /**
        * Negative Style Prompt
        * @description The negative style prompt parameter
        */
-      negative_style_prompt?: string | null;
-      /** @description The SDXL Refiner model used */
-      refiner_model?: components["schemas"]["MainModelField"] | null;
+      negative_style_prompt?: string;
+      /**
+       * Refiner Model
+       * @description The SDXL Refiner model used
+       */
+      refiner_model?: components["schemas"]["MainModelField"];
       /**
        * Refiner Cfg Scale
        * @description The classifier-free guidance scale parameter used for the refiner
        */
-      refiner_cfg_scale?: number | null;
+      refiner_cfg_scale?: number;
       /**
        * Refiner Steps
        * @description The number of steps used for the refiner
        */
-      refiner_steps?: number | null;
+      refiner_steps?: number;
       /**
        * Refiner Scheduler
        * @description The scheduler used for the refiner
        */
-      refiner_scheduler?: string | null;
+      refiner_scheduler?: string;
       /**
        * Refiner Positive Aesthetic Score
        * @description The aesthetic score used for the refiner
        */
-      refiner_positive_aesthetic_score?: number | null;
+      refiner_positive_aesthetic_score?: number;
       /**
        * Refiner Negative Aesthetic Score
        * @description The aesthetic score used for the refiner
        */
-      refiner_negative_aesthetic_score?: number | null;
+      refiner_negative_aesthetic_score?: number;
       /**
        * Refiner Start
        * @description The start value used for refiner denoising
        */
-      refiner_start?: number | null;
+      refiner_start?: number;
     };
     /**
      * Create Denoise Mask
@@ -2034,23 +2222,32 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description VAE */
+      use_cache?: boolean;
+      /**
+       * Vae
+       * @description VAE
+       */
       vae?: components["schemas"]["VaeField"];
-      /** @description Image which will be masked */
-      image?: components["schemas"]["ImageField"] | null;
-      /** @description The mask to use when pasting */
+      /**
+       * Image
+       * @description Image which will be masked
+       */
+      image?: components["schemas"]["ImageField"];
+      /**
+       * Mask
+       * @description The mask to use when pasting
+       */
       mask?: components["schemas"]["ImageField"];
       /**
        * Tiled
@@ -2065,13 +2262,16 @@ export type components = {
        */
       fp32?: boolean;
       /**
-       * type
+       * Type
        * @default create_denoise_mask
-       * @constant
+       * @enum {string}
        */
       type: "create_denoise_mask";
     };
-    /** CursorPaginatedResults[SessionQueueItemDTO] */
+    /**
+     * CursorPaginatedResults[SessionQueueItemDTO]
+     * @description Cursor-paginated results
+     */
     CursorPaginatedResults_SessionQueueItemDTO_: {
       /**
        * Limit
@@ -2104,26 +2304,32 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to inpaint */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to inpaint
+       */
       image?: components["schemas"]["ImageField"];
-      /** @description The mask to use when inpainting */
+      /**
+       * Mask
+       * @description The mask to use when inpainting
+       */
       mask?: components["schemas"]["ImageField"];
       /**
-       * type
+       * Type
        * @default cv_inpaint
-       * @constant
+       * @enum {string}
        */
       type: "cv_inpaint";
     };
@@ -2165,24 +2371,23 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description Positive conditioning tensor */
-      positive_conditioning?: components["schemas"]["ConditioningField"];
-      /** @description Negative conditioning tensor */
-      negative_conditioning?: components["schemas"]["ConditioningField"];
-      /** @description Noise tensor */
-      noise?: components["schemas"]["LatentsField"] | null;
+      use_cache?: boolean;
+      /**
+       * Noise
+       * @description Noise tensor
+       */
+      noise?: components["schemas"]["LatentsField"];
       /**
        * Steps
        * @description Number of steps to run
@@ -2214,33 +2419,49 @@ export type components = {
        * @enum {string}
        */
       scheduler?: "ddim" | "ddpm" | "deis" | "lms" | "lms_k" | "pndm" | "heun" | "heun_k" | "euler" | "euler_k" | "euler_a" | "kdpm_2" | "kdpm_2_a" | "dpmpp_2s" | "dpmpp_2s_k" | "dpmpp_2m" | "dpmpp_2m_k" | "dpmpp_2m_sde" | "dpmpp_2m_sde_k" | "dpmpp_sde" | "dpmpp_sde_k" | "unipc";
+      /** Control */
+      control?: components["schemas"]["ControlField"] | components["schemas"]["ControlField"][];
+      /**
+       * IP-Adapter
+       * @description IP-Adapter to apply
+       */
+      ip_adapter?: components["schemas"]["IPAdapterField"] | components["schemas"]["IPAdapterField"][];
+      /**
+       * T2I-Adapter
+       * @description T2I-Adapter(s) to apply
+       */
+      t2i_adapter?: components["schemas"]["T2IAdapterField"] | components["schemas"]["T2IAdapterField"][];
+      /**
+       * Latents
+       * @description Latents tensor
+       */
+      latents?: components["schemas"]["LatentsField"];
+      /**
+       * Denoise Mask
+       * @description The mask to use for the operation
+       */
+      denoise_mask?: components["schemas"]["DenoiseMaskField"];
+      /**
+       * Type
+       * @default denoise_latents
+       * @enum {string}
+       */
+      type: "denoise_latents";
+      /**
+       * Positive Conditioning
+       * @description Positive conditioning tensor
+       */
+      positive_conditioning?: components["schemas"]["ConditioningField"];
+      /**
+       * Negative Conditioning
+       * @description Negative conditioning tensor
+       */
+      negative_conditioning?: components["schemas"]["ConditioningField"];
       /**
        * UNet
        * @description UNet (scheduler, LoRAs)
        */
       unet?: components["schemas"]["UNetField"];
-      /** Control */
-      control?: components["schemas"]["ControlField"] | components["schemas"]["ControlField"][] | null;
-      /**
-       * IP-Adapter
-       * @description IP-Adapter to apply
-       */
-      ip_adapter?: components["schemas"]["IPAdapterField"] | components["schemas"]["IPAdapterField"][] | null;
-      /**
-       * T2I-Adapter
-       * @description T2I-Adapter(s) to apply
-       */
-      t2i_adapter?: components["schemas"]["T2IAdapterField"] | components["schemas"]["T2IAdapterField"][] | null;
-      /** @description Latents tensor */
-      latents?: components["schemas"]["LatentsField"] | null;
-      /** @description The mask to use for the operation */
-      denoise_mask?: components["schemas"]["DenoiseMaskField"] | null;
-      /**
-       * type
-       * @default denoise_latents
-       * @constant
-       */
-      type: "denoise_latents";
     };
     /**
      * DenoiseMaskField
@@ -2256,19 +2477,22 @@ export type components = {
        * Masked Latents Name
        * @description The name of the masked image latents
        */
-      masked_latents_name: string | null;
+      masked_latents_name?: string;
     };
     /**
      * DenoiseMaskOutput
      * @description Base class for nodes that output a single image
      */
     DenoiseMaskOutput: {
-      /** @description Mask for denoise model run */
+      /**
+       * Denoise Mask
+       * @description Mask for denoise model run
+       */
       denoise_mask: components["schemas"]["DenoiseMaskField"];
       /**
-       * type
+       * Type
        * @default denoise_mask_output
-       * @constant
+       * @enum {string}
        */
       type: "denoise_mask_output";
     };
@@ -2287,18 +2511,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * A
        * @description The first number
@@ -2312,9 +2536,9 @@ export type components = {
        */
       b?: number;
       /**
-       * type
+       * Type
        * @default div
-       * @constant
+       * @enum {string}
        */
       type: "div";
     };
@@ -2333,18 +2557,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default false
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Prompt
        * @description The prompt to parse with dynamicprompts
@@ -2363,9 +2587,9 @@ export type components = {
        */
       combinatorial?: boolean;
       /**
-       * type
+       * Type
        * @default dynamic_prompt
-       * @constant
+       * @enum {string}
        */
       type: "dynamic_prompt";
     };
@@ -2374,7 +2598,7 @@ export type components = {
       /** Prompts */
       prompts: string[];
       /** Error */
-      error?: string | null;
+      error?: string;
     };
     /**
      * Upscale (RealESRGAN)
@@ -2391,19 +2615,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The input image */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The input image
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Model Name
@@ -2419,17 +2646,23 @@ export type components = {
        */
       tile_size?: number;
       /**
-       * type
+       * Type
        * @default esrgan
-       * @constant
+       * @enum {string}
        */
       type: "esrgan";
     };
     /** Edge */
     Edge: {
-      /** @description The connection for the edge's from node and field */
+      /**
+       * Source
+       * @description The connection for the edge's from node and field
+       */
       source: components["schemas"]["EdgeConnection"];
-      /** @description The connection for the edge's to node and field */
+      /**
+       * Destination
+       * @description The connection for the edge's to node and field
+       */
       destination: components["schemas"]["EdgeConnection"];
     };
     /** EdgeConnection */
@@ -2462,13 +2695,44 @@ export type components = {
        * @description The total number of queue items requested to be enqueued
        */
       requested: number;
-      /** @description The batch that was enqueued */
+      /**
+       * Batch
+       * @description The batch that was enqueued
+       */
       batch: components["schemas"]["Batch"];
       /**
        * Priority
        * @description The priority of the enqueued batch
        */
       priority: number;
+    };
+    /** EnqueueGraphResult */
+    EnqueueGraphResult: {
+      /**
+       * Enqueued
+       * @description The total number of queue items enqueued
+       */
+      enqueued: number;
+      /**
+       * Requested
+       * @description The total number of queue items requested to be enqueued
+       */
+      requested: number;
+      /**
+       * Batch
+       * @description The batch that was enqueued
+       */
+      batch: components["schemas"]["Batch"];
+      /**
+       * Priority
+       * @description The priority of the enqueued batch
+       */
+      priority: number;
+      /**
+       * Queue Item
+       * @description The queue item that was enqueued
+       */
+      queue_item: components["schemas"]["SessionQueueItemDTO"];
     };
     /**
      * FaceIdentifier
@@ -2485,19 +2749,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description Image to face detect */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description Image to face detect
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Minimum Confidence
@@ -2512,9 +2779,9 @@ export type components = {
        */
       chunk?: boolean;
       /**
-       * type
+       * Type
        * @default face_identifier
-       * @constant
+       * @enum {string}
        */
       type: "face_identifier";
     };
@@ -2533,19 +2800,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description Image to face detect */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description Image to face detect
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Face Ids
@@ -2584,9 +2854,9 @@ export type components = {
        */
       invert_mask?: boolean;
       /**
-       * type
+       * Type
        * @default face_mask_detection
-       * @constant
+       * @enum {string}
        */
       type: "face_mask_detection";
     };
@@ -2595,7 +2865,10 @@ export type components = {
      * @description Base class for FaceMask output
      */
     FaceMaskOutput: {
-      /** @description The output image */
+      /**
+       * Image
+       * @description The output image
+       */
       image: components["schemas"]["ImageField"];
       /**
        * Width
@@ -2608,12 +2881,15 @@ export type components = {
        */
       height: number;
       /**
-       * type
+       * Type
        * @default face_mask_output
-       * @constant
+       * @enum {string}
        */
       type: "face_mask_output";
-      /** @description The output mask */
+      /**
+       * Mask
+       * @description The output mask
+       */
       mask: components["schemas"]["ImageField"];
     };
     /**
@@ -2631,19 +2907,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description Image for face detection */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description Image for face detection
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Face Id
@@ -2682,9 +2961,9 @@ export type components = {
        */
       chunk?: boolean;
       /**
-       * type
+       * Type
        * @default face_off
-       * @constant
+       * @enum {string}
        */
       type: "face_off";
     };
@@ -2693,7 +2972,10 @@ export type components = {
      * @description Base class for FaceOff Output
      */
     FaceOffOutput: {
-      /** @description The output image */
+      /**
+       * Image
+       * @description The output image
+       */
       image: components["schemas"]["ImageField"];
       /**
        * Width
@@ -2706,12 +2988,15 @@ export type components = {
        */
       height: number;
       /**
-       * type
+       * Type
        * @default face_off_output
-       * @constant
+       * @enum {string}
        */
       type: "face_off_output";
-      /** @description The output mask */
+      /**
+       * Mask
+       * @description The output mask
+       */
       mask: components["schemas"]["ImageField"];
       /**
        * X
@@ -2739,27 +3024,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Collection
        * @description The collection of float values
        */
       collection?: number[];
       /**
-       * type
+       * Type
        * @default float_collection
-       * @constant
+       * @enum {string}
        */
       type: "float_collection";
     };
@@ -2774,9 +3059,9 @@ export type components = {
        */
       collection: number[];
       /**
-       * type
+       * Type
        * @default float_collection_output
-       * @constant
+       * @enum {string}
        */
       type: "float_collection_output";
     };
@@ -2795,18 +3080,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Value
        * @description The float value
@@ -2814,9 +3099,9 @@ export type components = {
        */
       value?: number;
       /**
-       * type
+       * Type
        * @default float
-       * @constant
+       * @enum {string}
        */
       type: "float";
     };
@@ -2835,18 +3120,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Start
        * @description The first value of the range
@@ -2866,9 +3151,9 @@ export type components = {
        */
       steps?: number;
       /**
-       * type
+       * Type
        * @default float_range
-       * @constant
+       * @enum {string}
        */
       type: "float_range";
     };
@@ -2887,18 +3172,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Operation
        * @description The operation to perform
@@ -2919,9 +3204,9 @@ export type components = {
        */
       b?: number;
       /**
-       * type
+       * Type
        * @default float_math
-       * @constant
+       * @enum {string}
        */
       type: "float_math";
     };
@@ -2936,9 +3221,9 @@ export type components = {
        */
       value: number;
       /**
-       * type
+       * Type
        * @default float_output
-       * @constant
+       * @enum {string}
        */
       type: "float_output";
     };
@@ -2957,18 +3242,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Value
        * @description The value to round
@@ -2989,9 +3274,9 @@ export type components = {
        */
       method?: "Nearest" | "Floor" | "Ceiling" | "Truncate";
       /**
-       * type
+       * Type
        * @default float_to_int
-       * @constant
+       * @enum {string}
        */
       type: "float_to_int";
     };
@@ -3007,7 +3292,7 @@ export type components = {
        * @description The nodes in this graph
        */
       nodes?: {
-        [key: string]: components["schemas"]["ImageResizeInvocation"] | components["schemas"]["ONNXPromptInvocation"] | components["schemas"]["FloatLinearRangeInvocation"] | components["schemas"]["StringSplitInvocation"] | components["schemas"]["IntegerCollectionInvocation"] | components["schemas"]["DynamicPromptInvocation"] | components["schemas"]["CannyImageProcessorInvocation"] | components["schemas"]["MediapipeFaceProcessorInvocation"] | components["schemas"]["StringJoinInvocation"] | components["schemas"]["BlankImageInvocation"] | components["schemas"]["SubtractInvocation"] | components["schemas"]["ImageCropInvocation"] | components["schemas"]["ImageChannelInvocation"] | components["schemas"]["InfillTileInvocation"] | components["schemas"]["ImagePasteInvocation"] | components["schemas"]["CompelInvocation"] | components["schemas"]["ImageInvocation"] | components["schemas"]["ImageConvertInvocation"] | components["schemas"]["ESRGANInvocation"] | components["schemas"]["MidasDepthImageProcessorInvocation"] | components["schemas"]["ImageToLatentsInvocation"] | components["schemas"]["StepParamEasingInvocation"] | components["schemas"]["RoundInvocation"] | components["schemas"]["ClipSkipInvocation"] | components["schemas"]["FloatCollectionInvocation"] | components["schemas"]["ONNXLatentsToImageInvocation"] | components["schemas"]["AddInvocation"] | components["schemas"]["SDXLCompelPromptInvocation"] | components["schemas"]["SchedulerInvocation"] | components["schemas"]["FloatMathInvocation"] | components["schemas"]["ImageLerpInvocation"] | components["schemas"]["TileResamplerProcessorInvocation"] | components["schemas"]["LaMaInfillInvocation"] | components["schemas"]["FaceOffInvocation"] | components["schemas"]["LatentsToImageInvocation"] | components["schemas"]["FloatToIntegerInvocation"] | components["schemas"]["ColorInvocation"] | components["schemas"]["StringJoinThreeInvocation"] | components["schemas"]["CollectInvocation"] | components["schemas"]["ImageMultiplyInvocation"] | components["schemas"]["MlsdImageProcessorInvocation"] | components["schemas"]["LineartAnimeImageProcessorInvocation"] | components["schemas"]["ColorCorrectInvocation"] | components["schemas"]["IterateInvocation"] | components["schemas"]["StringInvocation"] | components["schemas"]["DenoiseLatentsInvocation"] | components["schemas"]["OnnxModelLoaderInvocation"] | components["schemas"]["IntegerInvocation"] | components["schemas"]["IPAdapterInvocation"] | components["schemas"]["RangeOfSizeInvocation"] | components["schemas"]["RangeInvocation"] | components["schemas"]["StringReplaceInvocation"] | components["schemas"]["FaceMaskInvocation"] | components["schemas"]["ContentShuffleImageProcessorInvocation"] | components["schemas"]["PidiImageProcessorInvocation"] | components["schemas"]["ImageNSFWBlurInvocation"] | components["schemas"]["MetadataAccumulatorInvocation"] | components["schemas"]["HedImageProcessorInvocation"] | components["schemas"]["LatentsInvocation"] | components["schemas"]["OpenposeImageProcessorInvocation"] | components["schemas"]["BooleanInvocation"] | components["schemas"]["ZoeDepthImageProcessorInvocation"] | components["schemas"]["ImageScaleInvocation"] | components["schemas"]["MaskFromAlphaInvocation"] | components["schemas"]["RandomIntInvocation"] | components["schemas"]["RandomRangeInvocation"] | components["schemas"]["ColorMapImageProcessorInvocation"] | components["schemas"]["MaskCombineInvocation"] | components["schemas"]["ScaleLatentsInvocation"] | components["schemas"]["DivideInvocation"] | components["schemas"]["CvInpaintInvocation"] | components["schemas"]["LineartImageProcessorInvocation"] | components["schemas"]["PromptsFromFileInvocation"] | components["schemas"]["StringSplitNegInvocation"] | components["schemas"]["ImageWatermarkInvocation"] | components["schemas"]["SDXLModelLoaderInvocation"] | components["schemas"]["ImageCollectionInvocation"] | components["schemas"]["MultiplyInvocation"] | components["schemas"]["FloatInvocation"] | components["schemas"]["VaeLoaderInvocation"] | components["schemas"]["RandomFloatInvocation"] | components["schemas"]["IntegerMathInvocation"] | components["schemas"]["SDXLLoraLoaderInvocation"] | components["schemas"]["ConditioningCollectionInvocation"] | components["schemas"]["SaveImageInvocation"] | components["schemas"]["SeamlessModeInvocation"] | components["schemas"]["GraphInvocation"] | components["schemas"]["ImageChannelOffsetInvocation"] | components["schemas"]["ImageInverseLerpInvocation"] | components["schemas"]["SegmentAnythingProcessorInvocation"] | components["schemas"]["ImageChannelMultiplyInvocation"] | components["schemas"]["SDXLRefinerModelLoaderInvocation"] | components["schemas"]["ResizeLatentsInvocation"] | components["schemas"]["InfillColorInvocation"] | components["schemas"]["LatentsCollectionInvocation"] | components["schemas"]["NormalbaeImageProcessorInvocation"] | components["schemas"]["SDXLRefinerCompelPromptInvocation"] | components["schemas"]["LoraLoaderInvocation"] | components["schemas"]["MainModelLoaderInvocation"] | components["schemas"]["T2IAdapterInvocation"] | components["schemas"]["ConditioningInvocation"] | components["schemas"]["BooleanCollectionInvocation"] | components["schemas"]["InfillPatchMatchInvocation"] | components["schemas"]["FaceIdentifierInvocation"] | components["schemas"]["ControlNetInvocation"] | components["schemas"]["CreateDenoiseMaskInvocation"] | components["schemas"]["CV2InfillInvocation"] | components["schemas"]["ImageBlurInvocation"] | components["schemas"]["NoiseInvocation"] | components["schemas"]["ImageHueAdjustmentInvocation"] | components["schemas"]["MaskEdgeInvocation"] | components["schemas"]["ONNXTextToLatentsInvocation"] | components["schemas"]["LeresImageProcessorInvocation"] | components["schemas"]["StringCollectionInvocation"] | components["schemas"]["ShowImageInvocation"] | components["schemas"]["BlendLatentsInvocation"];
+        [key: string]: components["schemas"]["BooleanInvocation"] | components["schemas"]["BooleanCollectionInvocation"] | components["schemas"]["IntegerInvocation"] | components["schemas"]["IntegerCollectionInvocation"] | components["schemas"]["FloatInvocation"] | components["schemas"]["FloatCollectionInvocation"] | components["schemas"]["StringInvocation"] | components["schemas"]["StringCollectionInvocation"] | components["schemas"]["ImageInvocation"] | components["schemas"]["ImageCollectionInvocation"] | components["schemas"]["LatentsInvocation"] | components["schemas"]["LatentsCollectionInvocation"] | components["schemas"]["ColorInvocation"] | components["schemas"]["ConditioningInvocation"] | components["schemas"]["ConditioningCollectionInvocation"] | components["schemas"]["ControlNetInvocation"] | components["schemas"]["ImageProcessorInvocation"] | components["schemas"]["IPAdapterInvocation"] | components["schemas"]["MainModelLoaderInvocation"] | components["schemas"]["LoraLoaderInvocation"] | components["schemas"]["SDXLLoraLoaderInvocation"] | components["schemas"]["VaeLoaderInvocation"] | components["schemas"]["SeamlessModeInvocation"] | components["schemas"]["T2IAdapterInvocation"] | components["schemas"]["MetadataAccumulatorInvocation"] | components["schemas"]["FaceOffInvocation"] | components["schemas"]["FaceMaskInvocation"] | components["schemas"]["FaceIdentifierInvocation"] | components["schemas"]["SDXLModelLoaderInvocation"] | components["schemas"]["SDXLRefinerModelLoaderInvocation"] | components["schemas"]["CompelInvocation"] | components["schemas"]["SDXLCompelPromptInvocation"] | components["schemas"]["SDXLRefinerCompelPromptInvocation"] | components["schemas"]["ClipSkipInvocation"] | components["schemas"]["SchedulerInvocation"] | components["schemas"]["CreateDenoiseMaskInvocation"] | components["schemas"]["DenoiseLatentsInvocation"] | components["schemas"]["LatentsToImageInvocation"] | components["schemas"]["ResizeLatentsInvocation"] | components["schemas"]["ScaleLatentsInvocation"] | components["schemas"]["ImageToLatentsInvocation"] | components["schemas"]["BlendLatentsInvocation"] | components["schemas"]["ONNXPromptInvocation"] | components["schemas"]["ONNXTextToLatentsInvocation"] | components["schemas"]["ONNXLatentsToImageInvocation"] | components["schemas"]["OnnxModelLoaderInvocation"] | components["schemas"]["ShowImageInvocation"] | components["schemas"]["BlankImageInvocation"] | components["schemas"]["ImageCropInvocation"] | components["schemas"]["ImagePasteInvocation"] | components["schemas"]["MaskFromAlphaInvocation"] | components["schemas"]["ImageMultiplyInvocation"] | components["schemas"]["ImageChannelInvocation"] | components["schemas"]["ImageConvertInvocation"] | components["schemas"]["ImageBlurInvocation"] | components["schemas"]["ImageResizeInvocation"] | components["schemas"]["ImageScaleInvocation"] | components["schemas"]["ImageLerpInvocation"] | components["schemas"]["ImageInverseLerpInvocation"] | components["schemas"]["ImageNSFWBlurInvocation"] | components["schemas"]["ImageWatermarkInvocation"] | components["schemas"]["MaskEdgeInvocation"] | components["schemas"]["MaskCombineInvocation"] | components["schemas"]["ColorCorrectInvocation"] | components["schemas"]["ImageHueAdjustmentInvocation"] | components["schemas"]["ImageChannelOffsetInvocation"] | components["schemas"]["ImageChannelMultiplyInvocation"] | components["schemas"]["SaveImageInvocation"] | components["schemas"]["DynamicPromptInvocation"] | components["schemas"]["PromptsFromFileInvocation"] | components["schemas"]["CvInpaintInvocation"] | components["schemas"]["FloatLinearRangeInvocation"] | components["schemas"]["StepParamEasingInvocation"] | components["schemas"]["AddInvocation"] | components["schemas"]["SubtractInvocation"] | components["schemas"]["MultiplyInvocation"] | components["schemas"]["DivideInvocation"] | components["schemas"]["RandomIntInvocation"] | components["schemas"]["RandomFloatInvocation"] | components["schemas"]["FloatToIntegerInvocation"] | components["schemas"]["RoundInvocation"] | components["schemas"]["IntegerMathInvocation"] | components["schemas"]["FloatMathInvocation"] | components["schemas"]["NoiseInvocation"] | components["schemas"]["RangeInvocation"] | components["schemas"]["RangeOfSizeInvocation"] | components["schemas"]["RandomRangeInvocation"] | components["schemas"]["ESRGANInvocation"] | components["schemas"]["StringSplitNegInvocation"] | components["schemas"]["StringSplitInvocation"] | components["schemas"]["StringJoinInvocation"] | components["schemas"]["StringJoinThreeInvocation"] | components["schemas"]["StringReplaceInvocation"] | components["schemas"]["InfillColorInvocation"] | components["schemas"]["InfillTileInvocation"] | components["schemas"]["InfillPatchMatchInvocation"] | components["schemas"]["LaMaInfillInvocation"] | components["schemas"]["CV2InfillInvocation"] | components["schemas"]["GraphInvocation"] | components["schemas"]["IterateInvocation"] | components["schemas"]["CollectInvocation"] | components["schemas"]["CannyImageProcessorInvocation"] | components["schemas"]["HedImageProcessorInvocation"] | components["schemas"]["LineartImageProcessorInvocation"] | components["schemas"]["LineartAnimeImageProcessorInvocation"] | components["schemas"]["OpenposeImageProcessorInvocation"] | components["schemas"]["MidasDepthImageProcessorInvocation"] | components["schemas"]["NormalbaeImageProcessorInvocation"] | components["schemas"]["MlsdImageProcessorInvocation"] | components["schemas"]["PidiImageProcessorInvocation"] | components["schemas"]["ContentShuffleImageProcessorInvocation"] | components["schemas"]["ZoeDepthImageProcessorInvocation"] | components["schemas"]["MediapipeFaceProcessorInvocation"] | components["schemas"]["LeresImageProcessorInvocation"] | components["schemas"]["TileResamplerProcessorInvocation"] | components["schemas"]["SegmentAnythingProcessorInvocation"] | components["schemas"]["ColorMapImageProcessorInvocation"];
       };
       /**
        * Edges
@@ -3025,9 +3310,15 @@ export type components = {
        * @description The id of the execution state
        */
       id: string;
-      /** @description The graph being executed */
+      /**
+       * Graph
+       * @description The graph being executed
+       */
       graph: components["schemas"]["Graph"];
-      /** @description The expanded graph of activated and executed nodes */
+      /**
+       * Execution Graph
+       * @description The expanded graph of activated and executed nodes
+       */
       execution_graph: components["schemas"]["Graph"];
       /**
        * Executed
@@ -3044,7 +3335,7 @@ export type components = {
        * @description The results of node executions
        */
       results: {
-        [key: string]: components["schemas"]["IntegerOutput"] | components["schemas"]["ColorOutput"] | components["schemas"]["DenoiseMaskOutput"] | components["schemas"]["IntegerCollectionOutput"] | components["schemas"]["ImageOutput"] | components["schemas"]["FloatCollectionOutput"] | components["schemas"]["GraphInvocationOutput"] | components["schemas"]["LatentsCollectionOutput"] | components["schemas"]["SDXLModelLoaderOutput"] | components["schemas"]["IterateInvocationOutput"] | components["schemas"]["FloatOutput"] | components["schemas"]["LoraLoaderOutput"] | components["schemas"]["StringCollectionOutput"] | components["schemas"]["SchedulerOutput"] | components["schemas"]["T2IAdapterOutput"] | components["schemas"]["SeamlessModeOutput"] | components["schemas"]["StringPosNegOutput"] | components["schemas"]["LatentsOutput"] | components["schemas"]["ControlOutput"] | components["schemas"]["VaeLoaderOutput"] | components["schemas"]["ColorCollectionOutput"] | components["schemas"]["NoiseOutput"] | components["schemas"]["CollectInvocationOutput"] | components["schemas"]["FaceMaskOutput"] | components["schemas"]["ImageCollectionOutput"] | components["schemas"]["ONNXModelLoaderOutput"] | components["schemas"]["ConditioningCollectionOutput"] | components["schemas"]["BooleanOutput"] | components["schemas"]["ConditioningOutput"] | components["schemas"]["MetadataAccumulatorOutput"] | components["schemas"]["BooleanCollectionOutput"] | components["schemas"]["FaceOffOutput"] | components["schemas"]["String2Output"] | components["schemas"]["SDXLRefinerModelLoaderOutput"] | components["schemas"]["IPAdapterOutput"] | components["schemas"]["SDXLLoraLoaderOutput"] | components["schemas"]["StringOutput"] | components["schemas"]["ModelLoaderOutput"] | components["schemas"]["ClipSkipInvocationOutput"];
+        [key: string]: components["schemas"]["BooleanOutput"] | components["schemas"]["BooleanCollectionOutput"] | components["schemas"]["IntegerOutput"] | components["schemas"]["IntegerCollectionOutput"] | components["schemas"]["FloatOutput"] | components["schemas"]["FloatCollectionOutput"] | components["schemas"]["StringOutput"] | components["schemas"]["StringCollectionOutput"] | components["schemas"]["ImageOutput"] | components["schemas"]["ImageCollectionOutput"] | components["schemas"]["DenoiseMaskOutput"] | components["schemas"]["LatentsOutput"] | components["schemas"]["LatentsCollectionOutput"] | components["schemas"]["ColorOutput"] | components["schemas"]["ColorCollectionOutput"] | components["schemas"]["ConditioningOutput"] | components["schemas"]["ConditioningCollectionOutput"] | components["schemas"]["ControlOutput"] | components["schemas"]["IPAdapterOutput"] | components["schemas"]["ModelLoaderOutput"] | components["schemas"]["LoraLoaderOutput"] | components["schemas"]["SDXLLoraLoaderOutput"] | components["schemas"]["VaeLoaderOutput"] | components["schemas"]["SeamlessModeOutput"] | components["schemas"]["T2IAdapterOutput"] | components["schemas"]["MetadataAccumulatorOutput"] | components["schemas"]["SDXLModelLoaderOutput"] | components["schemas"]["SDXLRefinerModelLoaderOutput"] | components["schemas"]["ClipSkipInvocationOutput"] | components["schemas"]["SchedulerOutput"] | components["schemas"]["ONNXModelLoaderOutput"] | components["schemas"]["NoiseOutput"] | components["schemas"]["StringPosNegOutput"] | components["schemas"]["String2Output"] | components["schemas"]["GraphInvocationOutput"] | components["schemas"]["IterateInvocationOutput"] | components["schemas"]["CollectInvocationOutput"] | components["schemas"]["FaceMaskOutput"] | components["schemas"]["FaceOffOutput"];
       };
       /**
        * Errors
@@ -3083,33 +3374,41 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The graph to run */
+      use_cache?: boolean;
+      /**
+       * Graph
+       * @description The graph to run
+       */
       graph?: components["schemas"]["Graph"];
       /**
-       * type
+       * Type
        * @default graph
-       * @constant
+       * @enum {string}
        */
       type: "graph";
     };
-    /** GraphInvocationOutput */
+    /**
+     * GraphInvocationOutput
+     * @description Base class for all invocation outputs.
+     *
+     * All invocation outputs must use the `@invocation_output` decorator to provide their unique type.
+     */
     GraphInvocationOutput: {
       /**
-       * type
+       * Type
        * @default graph_output
-       * @constant
+       * @enum {string}
        */
       type: "graph_output";
     };
@@ -3133,20 +3432,29 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default hed_image_processor
+       * @enum {string}
+       */
+      type: "hed_image_processor";
       /**
        * Detect Resolution
        * @description Pixel resolution for detection
@@ -3165,23 +3473,23 @@ export type components = {
        * @default false
        */
       scribble?: boolean;
-      /**
-       * type
-       * @default hed_image_processor
-       * @constant
-       */
-      type: "hed_image_processor";
     };
     /** IPAdapterField */
     IPAdapterField: {
       /**
        * Image
-       * @description The IP-Adapter image prompt(s).
+       * @description The IP-Adapter image prompt.
        */
-      image: components["schemas"]["ImageField"] | components["schemas"]["ImageField"][];
-      /** @description The IP-Adapter model to use. */
+      image: components["schemas"]["ImageField"];
+      /**
+       * Ip Adapter Model
+       * @description The IP-Adapter model to use.
+       */
       ip_adapter_model: components["schemas"]["IPAdapterModelField"];
-      /** @description The name of the CLIP image encoder model. */
+      /**
+       * Image Encoder Model
+       * @description The name of the CLIP image encoder model.
+       */
       image_encoder_model: components["schemas"]["CLIPVisionModelField"];
       /**
        * Weight
@@ -3217,23 +3525,23 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Image
-       * @description The IP-Adapter image prompt(s).
+       * @description The IP-Adapter image prompt.
        */
-      image?: components["schemas"]["ImageField"] | components["schemas"]["ImageField"][];
+      image?: components["schemas"]["ImageField"];
       /**
        * IP-Adapter Model
        * @description The IP-Adapter model.
@@ -3258,17 +3566,23 @@ export type components = {
        */
       end_step_percent?: number;
       /**
-       * type
+       * Type
        * @default ip_adapter
-       * @constant
+       * @enum {string}
        */
       type: "ip_adapter";
     };
     /** IPAdapterMetadataField */
     IPAdapterMetadataField: {
-      /** @description The IP-Adapter image prompt. */
+      /**
+       * Image
+       * @description The IP-Adapter image prompt.
+       */
       image: components["schemas"]["ImageField"];
-      /** @description The IP-Adapter model to use. */
+      /**
+       * Ip Adapter Model
+       * @description The IP-Adapter model to use.
+       */
       ip_adapter_model: components["schemas"]["IPAdapterModelField"];
       /**
        * Weight
@@ -3305,22 +3619,26 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default ip_adapter
-       * @constant
+       * @enum {string}
        */
       model_type: "ip_adapter";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /**
        * Model Format
-       * @constant
+       * @enum {string}
        */
       model_format: "invokeai";
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
     };
-    /** IPAdapterOutput */
+    /**
+     * IPAdapterOutput
+     * @description Base class for all invocation outputs.
+     *
+     * All invocation outputs must use the `@invocation_output` decorator to provide their unique type.
+     */
     IPAdapterOutput: {
       /**
        * IP-Adapter
@@ -3328,9 +3646,9 @@ export type components = {
        */
       ip_adapter: components["schemas"]["IPAdapterField"];
       /**
-       * type
+       * Type
        * @default ip_adapter_output
-       * @constant
+       * @enum {string}
        */
       type: "ip_adapter_output";
     };
@@ -3349,19 +3667,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to blur */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to blur
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Radius
@@ -3377,9 +3698,9 @@ export type components = {
        */
       blur_type?: "gaussian" | "box";
       /**
-       * type
+       * Type
        * @default img_blur
-       * @constant
+       * @enum {string}
        */
       type: "img_blur";
     };
@@ -3410,19 +3731,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to get the channel from */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to get the channel from
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Channel
@@ -3432,9 +3756,9 @@ export type components = {
        */
       channel?: "A" | "R" | "G" | "B";
       /**
-       * type
+       * Type
        * @default img_chan
-       * @constant
+       * @enum {string}
        */
       type: "img_chan";
     };
@@ -3453,19 +3777,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to adjust */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to adjust
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Channel
@@ -3486,9 +3813,9 @@ export type components = {
        */
       invert_channel?: boolean;
       /**
-       * type
+       * Type
        * @default img_channel_multiply
-       * @constant
+       * @enum {string}
        */
       type: "img_channel_multiply";
     };
@@ -3507,19 +3834,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to adjust */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to adjust
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Channel
@@ -3534,9 +3864,9 @@ export type components = {
        */
       offset?: number;
       /**
-       * type
+       * Type
        * @default img_channel_offset
-       * @constant
+       * @enum {string}
        */
       type: "img_channel_offset";
     };
@@ -3555,27 +3885,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Collection
        * @description The collection of image values
        */
       collection?: components["schemas"]["ImageField"][];
       /**
-       * type
+       * Type
        * @default image_collection
-       * @constant
+       * @enum {string}
        */
       type: "image_collection";
     };
@@ -3590,9 +3920,9 @@ export type components = {
        */
       collection: components["schemas"]["ImageField"][];
       /**
-       * type
+       * Type
        * @default image_collection_output
-       * @constant
+       * @enum {string}
        */
       type: "image_collection_output";
     };
@@ -3611,19 +3941,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to convert */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to convert
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Mode
@@ -3633,9 +3966,9 @@ export type components = {
        */
       mode?: "L" | "RGB" | "RGBA" | "CMYK" | "YCbCr" | "LAB" | "HSV" | "I" | "F";
       /**
-       * type
+       * Type
        * @default img_conv
-       * @constant
+       * @enum {string}
        */
       type: "img_conv";
     };
@@ -3654,19 +3987,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to crop */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to crop
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * X
@@ -3693,9 +4029,9 @@ export type components = {
        */
       height?: number;
       /**
-       * type
+       * Type
        * @default img_crop
-       * @constant
+       * @enum {string}
        */
       type: "img_crop";
     };
@@ -3747,7 +4083,7 @@ export type components = {
        * Deleted At
        * @description The deleted timestamp of the image.
        */
-      deleted_at?: string | null;
+      deleted_at?: string;
       /**
        * Is Intermediate
        * @description Whether this is an intermediate image.
@@ -3757,12 +4093,12 @@ export type components = {
        * Session Id
        * @description The session ID that generated this image, if it is a generated image.
        */
-      session_id?: string | null;
+      session_id?: string;
       /**
        * Node Id
        * @description The node ID that generated this image, if it is a generated image.
        */
-      node_id?: string | null;
+      node_id?: string;
       /**
        * Starred
        * @description Whether this image is starred.
@@ -3772,7 +4108,7 @@ export type components = {
        * Board Id
        * @description The id of the board the image belongs to, if one exists.
        */
-      board_id?: string | null;
+      board_id?: string;
     };
     /**
      * ImageField
@@ -3800,19 +4136,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to adjust */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to adjust
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Hue
@@ -3821,9 +4160,9 @@ export type components = {
        */
       hue?: number;
       /**
-       * type
+       * Type
        * @default img_hue_adjust
-       * @constant
+       * @enum {string}
        */
       type: "img_hue_adjust";
     };
@@ -3842,19 +4181,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to lerp */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to lerp
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Min
@@ -3869,9 +4211,9 @@ export type components = {
        */
       max?: number;
       /**
-       * type
+       * Type
        * @default img_ilerp
-       * @constant
+       * @enum {string}
        */
       type: "img_ilerp";
     };
@@ -3890,24 +4232,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to load */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to load
+       */
       image?: components["schemas"]["ImageField"];
       /**
-       * type
+       * Type
        * @default image
-       * @constant
+       * @enum {string}
        */
       type: "image";
     };
@@ -3926,19 +4271,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to lerp */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to lerp
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Min
@@ -3953,9 +4301,9 @@ export type components = {
        */
       max?: number;
       /**
-       * type
+       * Type
        * @default img_lerp
-       * @constant
+       * @enum {string}
        */
       type: "img_lerp";
     };
@@ -3968,12 +4316,12 @@ export type components = {
        * Metadata
        * @description The image's core metadata, if it was created in the Linear or Canvas UI
        */
-      metadata?: Record<string, never> | null;
+      metadata?: Record<string, never>;
       /**
        * Graph
        * @description The graph that created the image
        */
-      graph?: Record<string, never> | null;
+      graph?: Record<string, never>;
     };
     /**
      * Multiply Images
@@ -3990,26 +4338,32 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The first image to multiply */
+      use_cache?: boolean;
+      /**
+       * Image1
+       * @description The first image to multiply
+       */
       image1?: components["schemas"]["ImageField"];
-      /** @description The second image to multiply */
+      /**
+       * Image2
+       * @description The second image to multiply
+       */
       image2?: components["schemas"]["ImageField"];
       /**
-       * type
+       * Type
        * @default img_mul
-       * @constant
+       * @enum {string}
        */
       type: "img_mul";
     };
@@ -4028,35 +4382,44 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to check */
-      image?: components["schemas"]["ImageField"];
-      /** @description Optional core metadata to be written to image */
-      metadata?: components["schemas"]["CoreMetadata"] | null;
+      use_cache?: boolean;
       /**
-       * type
+       * Metadata
+       * @description Optional core metadata to be written to image
+       */
+      metadata?: components["schemas"]["CoreMetadata"];
+      /**
+       * Type
        * @default img_nsfw
-       * @constant
+       * @enum {string}
        */
       type: "img_nsfw";
+      /**
+       * Image
+       * @description The image to check
+       */
+      image?: components["schemas"]["ImageField"];
     };
     /**
      * ImageOutput
      * @description Base class for nodes that output a single image
      */
     ImageOutput: {
-      /** @description The output image */
+      /**
+       * Image
+       * @description The output image
+       */
       image: components["schemas"]["ImageField"];
       /**
        * Width
@@ -4069,9 +4432,9 @@ export type components = {
        */
       height: number;
       /**
-       * type
+       * Type
        * @default image_output
-       * @constant
+       * @enum {string}
        */
       type: "image_output";
     };
@@ -4090,24 +4453,33 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The base image */
+      use_cache?: boolean;
+      /**
+       * Base Image
+       * @description The base image
+       */
       base_image?: components["schemas"]["ImageField"];
-      /** @description The image to paste */
+      /**
+       * Image
+       * @description The image to paste
+       */
       image?: components["schemas"]["ImageField"];
-      /** @description The mask to use when pasting */
-      mask?: components["schemas"]["ImageField"] | null;
+      /**
+       * Mask
+       * @description The mask to use when pasting
+       */
+      mask?: components["schemas"]["ImageField"];
       /**
        * X
        * @description The left x coordinate at which to paste the image
@@ -4127,11 +4499,50 @@ export type components = {
        */
       crop?: boolean;
       /**
-       * type
+       * Type
        * @default img_paste
-       * @constant
+       * @enum {string}
        */
       type: "img_paste";
+    };
+    /**
+     * Base Image Processor
+     * @description Base class for invocations that preprocess images for ControlNet
+     */
+    ImageProcessorInvocation: {
+      /**
+       * Id
+       * @description The id of this instance of an invocation. Must be unique among all instances of invocations.
+       */
+      id: string;
+      /**
+       * Is Intermediate
+       * @description Whether or not this is an intermediate invocation.
+       * @default false
+       */
+      is_intermediate?: boolean;
+      /**
+       * Workflow
+       * @description The workflow to save with the image
+       */
+      workflow?: string;
+      /**
+       * Use Cache
+       * @description Whether or not to use the cache
+       * @default true
+       */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
+      image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default image_processor
+       * @enum {string}
+       */
+      type: "image_processor";
     };
     /**
      * ImageRecordChanges
@@ -4145,23 +4556,22 @@ export type components = {
      */
     ImageRecordChanges: {
       /** @description The image's new category. */
-      image_category?: components["schemas"]["ImageCategory"] | null;
+      image_category?: components["schemas"]["ImageCategory"];
       /**
        * Session Id
        * @description The image's new session ID.
        */
-      session_id?: string | null;
+      session_id?: string;
       /**
        * Is Intermediate
        * @description The image's new `is_intermediate` flag.
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Starred
        * @description The image's new `starred` state
        */
-      starred?: boolean | null;
-      [key: string]: unknown;
+      starred?: boolean;
     };
     /**
      * Resize Image
@@ -4178,19 +4588,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to resize */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to resize
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Width
@@ -4211,12 +4624,15 @@ export type components = {
        * @enum {string}
        */
       resample_mode?: "nearest" | "box" | "bilinear" | "hamming" | "bicubic" | "lanczos";
-      /** @description Optional core metadata to be written to image */
-      metadata?: components["schemas"]["CoreMetadata"] | null;
       /**
-       * type
+       * Metadata
+       * @description Optional core metadata to be written to image
+       */
+      metadata?: components["schemas"]["CoreMetadata"];
+      /**
+       * Type
        * @default img_resize
-       * @constant
+       * @enum {string}
        */
       type: "img_resize";
     };
@@ -4235,19 +4651,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to scale */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to scale
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Scale Factor
@@ -4263,9 +4682,9 @@ export type components = {
        */
       resample_mode?: "nearest" | "box" | "bilinear" | "hamming" | "bicubic" | "lanczos";
       /**
-       * type
+       * Type
        * @default img_scale
-       * @constant
+       * @enum {string}
        */
       type: "img_scale";
     };
@@ -4284,21 +4703,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to encode */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to encode
+       */
       image?: components["schemas"]["ImageField"];
-      /** @description VAE */
+      /**
+       * Vae
+       * @description VAE
+       */
       vae?: components["schemas"]["VaeField"];
       /**
        * Tiled
@@ -4313,9 +4738,9 @@ export type components = {
        */
       fp32?: boolean;
       /**
-       * type
+       * Type
        * @default i2l
-       * @constant
+       * @enum {string}
        */
       type: "i2l";
     };
@@ -4355,19 +4780,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to check */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to check
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Text
@@ -4375,12 +4803,15 @@ export type components = {
        * @default InvokeAI
        */
       text?: string;
-      /** @description Optional core metadata to be written to image */
-      metadata?: components["schemas"]["CoreMetadata"] | null;
       /**
-       * type
+       * Metadata
+       * @description Optional core metadata to be written to image
+       */
+      metadata?: components["schemas"]["CoreMetadata"];
+      /**
+       * Type
        * @default img_watermark
-       * @constant
+       * @enum {string}
        */
       type: "img_watermark";
     };
@@ -4390,7 +4821,7 @@ export type components = {
        * Response
        * @description If defined, the message to display to the user when images begin downloading
        */
-      response: string | null;
+      response?: string;
     };
     /** ImagesUpdatedFromListResult */
     ImagesUpdatedFromListResult: {
@@ -4415,34 +4846,38 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to infill */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to infill
+       */
       image?: components["schemas"]["ImageField"];
       /**
+       * Color
        * @description The color to use to infill
        * @default {
-       *   "a": 255,
-       *   "b": 127,
+       *   "r": 127,
        *   "g": 127,
-       *   "r": 127
+       *   "b": 127,
+       *   "a": 255
        * }
        */
       color?: components["schemas"]["ColorField"];
       /**
-       * type
+       * Type
        * @default infill_rgba
-       * @constant
+       * @enum {string}
        */
       type: "infill_rgba";
     };
@@ -4461,19 +4896,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to infill */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to infill
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Downscale
@@ -4489,9 +4927,9 @@ export type components = {
        */
       resample_mode?: "nearest" | "box" | "bilinear" | "hamming" | "bicubic" | "lanczos";
       /**
-       * type
+       * Type
        * @default infill_patchmatch
-       * @constant
+       * @enum {string}
        */
       type: "infill_patchmatch";
     };
@@ -4510,19 +4948,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to infill */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to infill
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Tile Size
@@ -4536,9 +4977,9 @@ export type components = {
        */
       seed?: number;
       /**
-       * type
+       * Type
        * @default infill_tile
-       * @constant
+       * @enum {string}
        */
       type: "infill_tile";
     };
@@ -4557,27 +4998,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Collection
        * @description The collection of integer values
        */
       collection?: number[];
       /**
-       * type
+       * Type
        * @default integer_collection
-       * @constant
+       * @enum {string}
        */
       type: "integer_collection";
     };
@@ -4592,9 +5033,9 @@ export type components = {
        */
       collection: number[];
       /**
-       * type
+       * Type
        * @default integer_collection_output
-       * @constant
+       * @enum {string}
        */
       type: "integer_collection_output";
     };
@@ -4613,18 +5054,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Value
        * @description The integer value
@@ -4632,9 +5073,9 @@ export type components = {
        */
       value?: number;
       /**
-       * type
+       * Type
        * @default integer
-       * @constant
+       * @enum {string}
        */
       type: "integer";
     };
@@ -4653,18 +5094,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Operation
        * @description The operation to perform
@@ -4685,9 +5126,9 @@ export type components = {
        */
       b?: number;
       /**
-       * type
+       * Type
        * @default integer_math
-       * @constant
+       * @enum {string}
        */
       type: "integer_math";
     };
@@ -4702,9 +5143,9 @@ export type components = {
        */
       value: number;
       /**
-       * type
+       * Type
        * @default integer_output
-       * @constant
+       * @enum {string}
        */
       type: "integer_output";
     };
@@ -4751,18 +5192,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Collection
        * @description The list of items to iterate over
@@ -4775,9 +5216,9 @@ export type components = {
        */
       index?: number;
       /**
-       * type
+       * Type
        * @default iterate
-       * @constant
+       * @enum {string}
        */
       type: "iterate";
     };
@@ -4790,11 +5231,11 @@ export type components = {
        * Collection Item
        * @description The item being iterated over
        */
-      item: unknown;
+      item?: unknown;
       /**
-       * type
+       * Type
        * @default iterate_output
-       * @constant
+       * @enum {string}
        */
       type: "iterate_output";
     };
@@ -4813,24 +5254,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to infill */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to infill
+       */
       image?: components["schemas"]["ImageField"];
       /**
-       * type
+       * Type
        * @default infill_lama
-       * @constant
+       * @enum {string}
        */
       type: "infill_lama";
     };
@@ -4849,27 +5293,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Collection
        * @description The collection of latents tensors
        */
       collection?: components["schemas"]["LatentsField"][];
       /**
-       * type
+       * Type
        * @default latents_collection
-       * @constant
+       * @enum {string}
        */
       type: "latents_collection";
     };
@@ -4884,9 +5328,9 @@ export type components = {
        */
       collection: components["schemas"]["LatentsField"][];
       /**
-       * type
+       * Type
        * @default latents_collection_output
-       * @constant
+       * @enum {string}
        */
       type: "latents_collection_output";
     };
@@ -4904,7 +5348,7 @@ export type components = {
        * Seed
        * @description Seed used to generate this latents
        */
-      seed?: number | null;
+      seed?: number;
     };
     /**
      * Latents Primitive
@@ -4921,24 +5365,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The latents tensor */
+      use_cache?: boolean;
+      /**
+       * Latents
+       * @description The latents tensor
+       */
       latents?: components["schemas"]["LatentsField"];
       /**
-       * type
+       * Type
        * @default latents
-       * @constant
+       * @enum {string}
        */
       type: "latents";
     };
@@ -4947,7 +5394,10 @@ export type components = {
      * @description Base class for nodes that output a single latents tensor
      */
     LatentsOutput: {
-      /** @description Latents tensor */
+      /**
+       * Latents
+       * @description Latents tensor
+       */
       latents: components["schemas"]["LatentsField"];
       /**
        * Width
@@ -4960,9 +5410,9 @@ export type components = {
        */
       height: number;
       /**
-       * type
+       * Type
        * @default latents_output
-       * @constant
+       * @enum {string}
        */
       type: "latents_output";
     };
@@ -4981,22 +5431,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description Latents tensor */
-      latents?: components["schemas"]["LatentsField"];
-      /** @description VAE */
-      vae?: components["schemas"]["VaeField"];
+      use_cache?: boolean;
       /**
        * Tiled
        * @description Processing using overlapping tiles (reduce memory consumption)
@@ -5009,14 +5455,27 @@ export type components = {
        * @default false
        */
       fp32?: boolean;
-      /** @description Optional core metadata to be written to image */
-      metadata?: components["schemas"]["CoreMetadata"] | null;
       /**
-       * type
+       * Metadata
+       * @description Optional core metadata to be written to image
+       */
+      metadata?: components["schemas"]["CoreMetadata"];
+      /**
+       * Type
        * @default l2i
-       * @constant
+       * @enum {string}
        */
       type: "l2i";
+      /**
+       * Latents
+       * @description Latents tensor
+       */
+      latents?: components["schemas"]["LatentsField"];
+      /**
+       * Vae
+       * @description VAE
+       */
+      vae?: components["schemas"]["VaeField"];
     };
     /**
      * Leres (Depth) Processor
@@ -5033,20 +5492,29 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default leres_image_processor
+       * @enum {string}
+       */
+      type: "leres_image_processor";
       /**
        * Thr A
        * @description Leres parameter `thr_a`
@@ -5077,12 +5545,6 @@ export type components = {
        * @default 512
        */
       image_resolution?: number;
-      /**
-       * type
-       * @default leres_image_processor
-       * @constant
-       */
-      type: "leres_image_processor";
     };
     /**
      * Lineart Anime Processor
@@ -5099,20 +5561,29 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default lineart_anime_image_processor
+       * @enum {string}
+       */
+      type: "lineart_anime_image_processor";
       /**
        * Detect Resolution
        * @description Pixel resolution for detection
@@ -5125,12 +5596,6 @@ export type components = {
        * @default 512
        */
       image_resolution?: number;
-      /**
-       * type
-       * @default lineart_anime_image_processor
-       * @constant
-       */
-      type: "lineart_anime_image_processor";
     };
     /**
      * Lineart Processor
@@ -5147,20 +5612,29 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default lineart_image_processor
+       * @enum {string}
+       */
+      type: "lineart_image_processor";
       /**
        * Detect Resolution
        * @description Pixel resolution for detection
@@ -5179,19 +5653,16 @@ export type components = {
        * @default false
        */
       coarse?: boolean;
-      /**
-       * type
-       * @default lineart_image_processor
-       * @constant
-       */
-      type: "lineart_image_processor";
     };
     /**
      * LoRAMetadataField
      * @description LoRA metadata for an image generated in InvokeAI.
      */
     LoRAMetadataField: {
-      /** @description The LoRA model */
+      /**
+       * Lora
+       * @description The LoRA model
+       */
       lora: components["schemas"]["LoRAModelField"];
       /**
        * Weight
@@ -5206,16 +5677,15 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default lora
-       * @constant
+       * @enum {string}
        */
       model_type: "lora";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       model_format: components["schemas"]["LoRAModelFormat"];
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
     };
     /**
      * LoRAModelField
@@ -5232,11 +5702,13 @@ export type components = {
     };
     /**
      * LoRAModelFormat
+     * @description An enumeration.
      * @enum {string}
      */
     LoRAModelFormat: "lycoris" | "diffusers";
     /**
      * LogLevel
+     * @description An enumeration.
      * @enum {integer}
      */
     LogLevel: 0 | 10 | 20 | 30 | 40 | 50;
@@ -5252,7 +5724,7 @@ export type components = {
       /** @description Info to load submodel */
       model_type: components["schemas"]["ModelType"];
       /** @description Info to load submodel */
-      submodel?: components["schemas"]["SubModelType"] | null;
+      submodel?: components["schemas"]["SubModelType"];
       /**
        * Weight
        * @description Lora's weight which to use when apply to model
@@ -5274,18 +5746,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * LoRA
        * @description LoRA model to load
@@ -5301,16 +5773,16 @@ export type components = {
        * UNet
        * @description UNet (scheduler, LoRAs)
        */
-      unet?: components["schemas"]["UNetField"] | null;
+      unet?: components["schemas"]["UNetField"];
       /**
        * CLIP
        * @description CLIP (tokenizer, text encoder, LoRAs) and skipped layer count
        */
-      clip?: components["schemas"]["ClipField"] | null;
+      clip?: components["schemas"]["ClipField"];
       /**
-       * type
+       * Type
        * @default lora_loader
-       * @constant
+       * @enum {string}
        */
       type: "lora_loader";
     };
@@ -5323,16 +5795,16 @@ export type components = {
        * UNet
        * @description UNet (scheduler, LoRAs)
        */
-      unet?: components["schemas"]["UNetField"] | null;
+      unet?: components["schemas"]["UNetField"];
       /**
        * CLIP
        * @description CLIP (tokenizer, text encoder, LoRAs) and skipped layer count
        */
-      clip?: components["schemas"]["ClipField"] | null;
+      clip?: components["schemas"]["ClipField"];
       /**
-       * type
+       * Type
        * @default lora_loader_output
-       * @constant
+       * @enum {string}
        */
       type: "lora_loader_output";
     };
@@ -5366,24 +5838,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description Main model (UNet, VAE, CLIP) to load */
+      use_cache?: boolean;
+      /**
+       * Model
+       * @description Main model (UNet, VAE, CLIP) to load
+       */
       model: components["schemas"]["MainModelField"];
       /**
-       * type
+       * Type
        * @default main_model_loader
-       * @constant
+       * @enum {string}
        */
       type: "main_model_loader";
     };
@@ -5402,26 +5877,32 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The first mask to combine */
+      use_cache?: boolean;
+      /**
+       * Mask1
+       * @description The first mask to combine
+       */
       mask1?: components["schemas"]["ImageField"];
-      /** @description The second image to combine */
+      /**
+       * Mask2
+       * @description The second image to combine
+       */
       mask2?: components["schemas"]["ImageField"];
       /**
-       * type
+       * Type
        * @default mask_combine
-       * @constant
+       * @enum {string}
        */
       type: "mask_combine";
     };
@@ -5440,19 +5921,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to apply the mask to */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to apply the mask to
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Edge Size
@@ -5475,9 +5959,9 @@ export type components = {
        */
       high_threshold?: number;
       /**
-       * type
+       * Type
        * @default mask_edge
-       * @constant
+       * @enum {string}
        */
       type: "mask_edge";
     };
@@ -5496,19 +5980,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to create the mask from */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to create the mask from
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * Invert
@@ -5517,9 +6004,9 @@ export type components = {
        */
       invert?: boolean;
       /**
-       * type
+       * Type
        * @default tomask
-       * @constant
+       * @enum {string}
        */
       type: "tomask";
     };
@@ -5538,20 +6025,29 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default mediapipe_face_processor
+       * @enum {string}
+       */
+      type: "mediapipe_face_processor";
       /**
        * Max Faces
        * @description Maximum number of faces to detect
@@ -5564,50 +6060,13 @@ export type components = {
        * @default 0.5
        */
       min_confidence?: number;
-      /**
-       * type
-       * @default mediapipe_face_processor
-       * @constant
-       */
-      type: "mediapipe_face_processor";
     };
     /**
      * MergeInterpolationMethod
+     * @description An enumeration.
      * @enum {string}
      */
     MergeInterpolationMethod: "weighted_sum" | "sigmoid" | "inv_sigmoid" | "add_difference";
-    /** MergeModelsBody */
-    MergeModelsBody: {
-      /**
-       * Model Names
-       * @description model name
-       */
-      model_names: string[];
-      /**
-       * Merged Model Name
-       * @description Name of destination model
-       */
-      merged_model_name: string | null;
-      /**
-       * Alpha
-       * @description Alpha weighting strength to apply to 2d and 3d models
-       * @default 0.5
-       */
-      alpha?: number | null;
-      /** @description Interpolation method */
-      interp: components["schemas"]["MergeInterpolationMethod"] | null;
-      /**
-       * Force
-       * @description Force merging of models created with different versions of diffusers
-       * @default false
-       */
-      force?: boolean | null;
-      /**
-       * Merge Dest Directory
-       * @description Save the merged model to the designated directory (with 'merged_model_name' appended)
-       */
-      merge_dest_directory?: string | null;
-    };
     /**
      * Metadata Accumulator
      * @description Outputs a Core Metadata Object
@@ -5623,168 +6082,177 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Generation Mode
        * @description The generation mode that output this image
        */
-      generation_mode?: string | null;
+      generation_mode?: string;
       /**
        * Positive Prompt
        * @description The positive prompt parameter
        */
-      positive_prompt?: string | null;
+      positive_prompt?: string;
       /**
        * Negative Prompt
        * @description The negative prompt parameter
        */
-      negative_prompt?: string | null;
+      negative_prompt?: string;
       /**
        * Width
        * @description The width parameter
        */
-      width?: number | null;
+      width?: number;
       /**
        * Height
        * @description The height parameter
        */
-      height?: number | null;
+      height?: number;
       /**
        * Seed
        * @description The seed used for noise generation
        */
-      seed?: number | null;
+      seed?: number;
       /**
        * Rand Device
        * @description The device used for random number generation
        */
-      rand_device?: string | null;
+      rand_device?: string;
       /**
        * Cfg Scale
        * @description The classifier-free guidance scale parameter
        */
-      cfg_scale?: number | null;
+      cfg_scale?: number;
       /**
        * Steps
        * @description The number of steps used for inference
        */
-      steps?: number | null;
+      steps?: number;
       /**
        * Scheduler
        * @description The scheduler used for inference
        */
-      scheduler?: string | null;
+      scheduler?: string;
       /**
        * Clip Skip
        * @description The number of skipped CLIP layers
        */
-      clip_skip?: number | null;
-      /** @description The main model used for inference */
-      model?: components["schemas"]["MainModelField"] | null;
+      clip_skip?: number;
+      /**
+       * Model
+       * @description The main model used for inference
+       */
+      model?: components["schemas"]["MainModelField"];
       /**
        * Controlnets
        * @description The ControlNets used for inference
        */
-      controlnets?: components["schemas"]["ControlField"][] | null;
+      controlnets?: components["schemas"]["ControlField"][];
       /**
        * Ipadapters
        * @description The IP Adapters used for inference
        */
-      ipAdapters?: components["schemas"]["IPAdapterMetadataField"][] | null;
+      ipAdapters?: components["schemas"]["IPAdapterMetadataField"][];
       /**
        * T2Iadapters
        * @description The IP Adapters used for inference
        */
-      t2iAdapters?: components["schemas"]["T2IAdapterField"][] | null;
+      t2iAdapters?: components["schemas"]["T2IAdapterField"][];
       /**
        * Loras
        * @description The LoRAs used for inference
        */
-      loras?: components["schemas"]["LoRAMetadataField"][] | null;
+      loras?: components["schemas"]["LoRAMetadataField"][];
       /**
        * Strength
        * @description The strength used for latents-to-latents
        */
-      strength?: number | null;
+      strength?: number;
       /**
        * Init Image
        * @description The name of the initial image
        */
-      init_image?: string | null;
-      /** @description The VAE used for decoding, if the main model's default was not used */
-      vae?: components["schemas"]["VAEModelField"] | null;
+      init_image?: string;
+      /**
+       * Vae
+       * @description The VAE used for decoding, if the main model's default was not used
+       */
+      vae?: components["schemas"]["VAEModelField"];
       /**
        * Hrf Width
        * @description The high resolution fix height and width multipler.
        */
-      hrf_width?: number | null;
+      hrf_width?: number;
       /**
        * Hrf Height
        * @description The high resolution fix height and width multipler.
        */
-      hrf_height?: number | null;
+      hrf_height?: number;
       /**
        * Hrf Strength
        * @description The high resolution fix img2img strength used in the upscale pass.
        */
-      hrf_strength?: number | null;
+      hrf_strength?: number;
       /**
        * Positive Style Prompt
        * @description The positive style prompt parameter
        */
-      positive_style_prompt?: string | null;
+      positive_style_prompt?: string;
       /**
        * Negative Style Prompt
        * @description The negative style prompt parameter
        */
-      negative_style_prompt?: string | null;
-      /** @description The SDXL Refiner model used */
-      refiner_model?: components["schemas"]["MainModelField"] | null;
+      negative_style_prompt?: string;
+      /**
+       * Refiner Model
+       * @description The SDXL Refiner model used
+       */
+      refiner_model?: components["schemas"]["MainModelField"];
       /**
        * Refiner Cfg Scale
        * @description The classifier-free guidance scale parameter used for the refiner
        */
-      refiner_cfg_scale?: number | null;
+      refiner_cfg_scale?: number;
       /**
        * Refiner Steps
        * @description The number of steps used for the refiner
        */
-      refiner_steps?: number | null;
+      refiner_steps?: number;
       /**
        * Refiner Scheduler
        * @description The scheduler used for the refiner
        */
-      refiner_scheduler?: string | null;
+      refiner_scheduler?: string;
       /**
        * Refiner Positive Aesthetic Score
        * @description The aesthetic score used for the refiner
        */
-      refiner_positive_aesthetic_score?: number | null;
+      refiner_positive_aesthetic_score?: number;
       /**
        * Refiner Negative Aesthetic Score
        * @description The aesthetic score used for the refiner
        */
-      refiner_negative_aesthetic_score?: number | null;
+      refiner_negative_aesthetic_score?: number;
       /**
        * Refiner Start
        * @description The start value used for refiner denoising
        */
-      refiner_start?: number | null;
+      refiner_start?: number;
       /**
-       * type
+       * Type
        * @default metadata_accumulator
-       * @constant
+       * @enum {string}
        */
       type: "metadata_accumulator";
     };
@@ -5793,12 +6261,15 @@ export type components = {
      * @description The output of the MetadataAccumulator node
      */
     MetadataAccumulatorOutput: {
-      /** @description The core metadata for the image */
+      /**
+       * Metadata
+       * @description The core metadata for the image
+       */
       metadata: components["schemas"]["CoreMetadata"];
       /**
-       * type
+       * Type
        * @default metadata_accumulator_output
-       * @constant
+       * @enum {string}
        */
       type: "metadata_accumulator_output";
     };
@@ -5817,20 +6288,29 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default midas_depth_image_processor
+       * @enum {string}
+       */
+      type: "midas_depth_image_processor";
       /**
        * A Mult
        * @description Midas parameter `a_mult` (a = a_mult * PI)
@@ -5843,12 +6323,6 @@ export type components = {
        * @default 0.1
        */
       bg_th?: number;
-      /**
-       * type
-       * @default midas_depth_image_processor
-       * @constant
-       */
-      type: "midas_depth_image_processor";
     };
     /**
      * MLSD Processor
@@ -5865,20 +6339,29 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default mlsd_image_processor
+       * @enum {string}
+       */
+      type: "mlsd_image_processor";
       /**
        * Detect Resolution
        * @description Pixel resolution for detection
@@ -5903,16 +6386,11 @@ export type components = {
        * @default 0.1
        */
       thr_d?: number;
-      /**
-       * type
-       * @default mlsd_image_processor
-       * @constant
-       */
-      type: "mlsd_image_processor";
     };
     /**
      * ModelError
-     * @constant
+     * @description An enumeration.
+     * @enum {string}
      */
     ModelError: "not_found";
     /** ModelInfo */
@@ -5927,7 +6405,7 @@ export type components = {
       /** @description Info to load submodel */
       model_type: components["schemas"]["ModelType"];
       /** @description Info to load submodel */
-      submodel?: components["schemas"]["SubModelType"] | null;
+      submodel?: components["schemas"]["SubModelType"];
     };
     /**
      * ModelLoaderOutput
@@ -5950,19 +6428,21 @@ export type components = {
        */
       vae: components["schemas"]["VaeField"];
       /**
-       * type
+       * Type
        * @default model_loader_output
-       * @constant
+       * @enum {string}
        */
       type: "model_loader_output";
     };
     /**
      * ModelType
+     * @description An enumeration.
      * @enum {string}
      */
     ModelType: "onnx" | "main" | "vae" | "lora" | "controlnet" | "embedding" | "ip_adapter" | "clip_vision" | "t2i_adapter";
     /**
      * ModelVariantType
+     * @description An enumeration.
      * @enum {string}
      */
     ModelVariantType: "normal" | "inpaint" | "depth";
@@ -5986,18 +6466,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * A
        * @description The first number
@@ -6011,9 +6491,9 @@ export type components = {
        */
       b?: number;
       /**
-       * type
+       * Type
        * @default mul
-       * @constant
+       * @enum {string}
        */
       type: "mul";
     };
@@ -6050,18 +6530,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Seed
        * @description Seed for random number generation
@@ -6086,9 +6566,9 @@ export type components = {
        */
       use_cpu?: boolean;
       /**
-       * type
+       * Type
        * @default noise
-       * @constant
+       * @enum {string}
        */
       type: "noise";
     };
@@ -6097,8 +6577,11 @@ export type components = {
      * @description Invocation noise output
      */
     NoiseOutput: {
-      /** @description Noise tensor */
-      noise: components["schemas"]["LatentsField"];
+      /**
+       * Noise
+       * @description Noise tensor
+       */
+      noise?: components["schemas"]["LatentsField"];
       /**
        * Width
        * @description Width of output (px)
@@ -6110,9 +6593,9 @@ export type components = {
        */
       height: number;
       /**
-       * type
+       * Type
        * @default noise_output
-       * @constant
+       * @enum {string}
        */
       type: "noise_output";
     };
@@ -6131,20 +6614,29 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default normalbae_image_processor
+       * @enum {string}
+       */
+      type: "normalbae_image_processor";
       /**
        * Detect Resolution
        * @description Pixel resolution for detection
@@ -6157,12 +6649,6 @@ export type components = {
        * @default 512
        */
       image_resolution?: number;
-      /**
-       * type
-       * @default normalbae_image_processor
-       * @constant
-       */
-      type: "normalbae_image_processor";
     };
     /**
      * ONNX Latents to Image
@@ -6179,28 +6665,37 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description Denoised latents tensor */
-      latents?: components["schemas"]["LatentsField"];
-      /** @description VAE */
-      vae?: components["schemas"]["VaeField"];
-      /** @description Optional core metadata to be written to image */
-      metadata?: components["schemas"]["CoreMetadata"] | null;
+      use_cache?: boolean;
       /**
-       * type
+       * Latents
+       * @description Denoised latents tensor
+       */
+      latents?: components["schemas"]["LatentsField"];
+      /**
+       * Vae
+       * @description VAE
+       */
+      vae?: components["schemas"]["VaeField"];
+      /**
+       * Metadata
+       * @description Optional core metadata to be written to image
+       */
+      metadata?: components["schemas"]["CoreMetadata"];
+      /**
+       * Type
        * @default l2i_onnx
-       * @constant
+       * @enum {string}
        */
       type: "l2i_onnx";
     };
@@ -6230,13 +6725,19 @@ export type components = {
        */
       vae_encoder?: components["schemas"]["VaeField"];
       /**
-       * type
+       * Type
        * @default model_loader_output_onnx
-       * @constant
+       * @enum {string}
        */
       type: "model_loader_output_onnx";
     };
-    /** ONNX Prompt (Raw) */
+    /**
+     * ONNX Prompt (Raw)
+     * @description A node to process inputs and produce outputs.
+     * May use dependency injection in __init__ to receive providers.
+     *
+     * All invocations must use the `@invocation` decorator to provide their unique type.
+     */
     ONNXPromptInvocation: {
       /**
        * Id
@@ -6248,30 +6749,33 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Prompt
        * @description Raw prompt text (no parsing)
        * @default
        */
       prompt?: string;
-      /** @description CLIP (tokenizer, text encoder, LoRAs) and skipped layer count */
+      /**
+       * Clip
+       * @description CLIP (tokenizer, text encoder, LoRAs) and skipped layer count
+       */
       clip?: components["schemas"]["ClipField"];
       /**
-       * type
+       * Type
        * @default prompt_onnx
-       * @constant
+       * @enum {string}
        */
       type: "prompt_onnx";
     };
@@ -6282,20 +6786,19 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default onnx
-       * @constant
+       * @enum {string}
        */
       model_type: "onnx";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /**
        * Model Format
-       * @constant
+       * @enum {string}
        */
       model_format: "onnx";
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
       variant: components["schemas"]["ModelVariantType"];
     };
     /** ONNXStableDiffusion2ModelConfig */
@@ -6305,20 +6808,19 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default onnx
-       * @constant
+       * @enum {string}
        */
       model_type: "onnx";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /**
        * Model Format
-       * @constant
+       * @enum {string}
        */
       model_format: "onnx";
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
       variant: components["schemas"]["ModelVariantType"];
       prediction_type: components["schemas"]["SchedulerPredictionType"];
       /** Upcast Attention */
@@ -6339,23 +6841,32 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description Positive conditioning tensor */
+      use_cache?: boolean;
+      /**
+       * Positive Conditioning
+       * @description Positive conditioning tensor
+       */
       positive_conditioning?: components["schemas"]["ConditioningField"];
-      /** @description Negative conditioning tensor */
+      /**
+       * Negative Conditioning
+       * @description Negative conditioning tensor
+       */
       negative_conditioning?: components["schemas"]["ConditioningField"];
-      /** @description Noise tensor */
+      /**
+       * Noise
+       * @description Noise tensor
+       */
       noise?: components["schemas"]["LatentsField"];
       /**
        * Steps
@@ -6383,7 +6894,10 @@ export type components = {
        * @enum {string}
        */
       precision?: "tensor(bool)" | "tensor(int8)" | "tensor(uint8)" | "tensor(int16)" | "tensor(uint16)" | "tensor(int32)" | "tensor(uint32)" | "tensor(int64)" | "tensor(uint64)" | "tensor(float16)" | "tensor(float)" | "tensor(double)";
-      /** @description UNet (scheduler, LoRAs) */
+      /**
+       * Unet
+       * @description UNet (scheduler, LoRAs)
+       */
       unet?: components["schemas"]["UNetField"];
       /**
        * Control
@@ -6391,57 +6905,63 @@ export type components = {
        */
       control?: components["schemas"]["ControlField"] | components["schemas"]["ControlField"][];
       /**
-       * type
+       * Type
        * @default t2l_onnx
-       * @constant
+       * @enum {string}
        */
       type: "t2l_onnx";
     };
-    /** OffsetPaginatedResults[BoardDTO] */
+    /**
+     * OffsetPaginatedResults[BoardDTO]
+     * @description Offset-paginated results
+     */
     OffsetPaginatedResults_BoardDTO_: {
-      /**
-       * Limit
-       * @description Limit of items to get
-       */
-      limit: number;
-      /**
-       * Offset
-       * @description Offset from which to retrieve items
-       */
-      offset: number;
-      /**
-       * Total
-       * @description Total number of items in result
-       */
-      total: number;
       /**
        * Items
        * @description Items
        */
       items: components["schemas"]["BoardDTO"][];
-    };
-    /** OffsetPaginatedResults[ImageDTO] */
-    OffsetPaginatedResults_ImageDTO_: {
-      /**
-       * Limit
-       * @description Limit of items to get
-       */
-      limit: number;
       /**
        * Offset
        * @description Offset from which to retrieve items
        */
       offset: number;
       /**
+       * Limit
+       * @description Limit of items to get
+       */
+      limit: number;
+      /**
        * Total
        * @description Total number of items in result
        */
       total: number;
+    };
+    /**
+     * OffsetPaginatedResults[ImageDTO]
+     * @description Offset-paginated results
+     */
+    OffsetPaginatedResults_ImageDTO_: {
       /**
        * Items
        * @description Items
        */
       items: components["schemas"]["ImageDTO"][];
+      /**
+       * Offset
+       * @description Offset from which to retrieve items
+       */
+      offset: number;
+      /**
+       * Limit
+       * @description Limit of items to get
+       */
+      limit: number;
+      /**
+       * Total
+       * @description Total number of items in result
+       */
+      total: number;
     };
     /**
      * OnnxModelField
@@ -6473,24 +6993,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description ONNX Main model (UNet, VAE, CLIP) to load */
+      use_cache?: boolean;
+      /**
+       * Model
+       * @description ONNX Main model (UNet, VAE, CLIP) to load
+       */
       model: components["schemas"]["OnnxModelField"];
       /**
-       * type
+       * Type
        * @default onnx_model_loader
-       * @constant
+       * @enum {string}
        */
       type: "onnx_model_loader";
     };
@@ -6509,20 +7032,29 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default openpose_image_processor
+       * @enum {string}
+       */
+      type: "openpose_image_processor";
       /**
        * Hand And Face
        * @description Whether to use hands and face mode
@@ -6541,12 +7073,37 @@ export type components = {
        * @default 512
        */
       image_resolution?: number;
+    };
+    /**
+     * PaginatedResults[GraphExecutionState]
+     * @description Paginated results
+     */
+    PaginatedResults_GraphExecutionState_: {
       /**
-       * type
-       * @default openpose_image_processor
-       * @constant
+       * Items
+       * @description Items
        */
-      type: "openpose_image_processor";
+      items: components["schemas"]["GraphExecutionState"][];
+      /**
+       * Page
+       * @description Current Page
+       */
+      page: number;
+      /**
+       * Pages
+       * @description Total number of pages
+       */
+      pages: number;
+      /**
+       * Per Page
+       * @description Number of items per page
+       */
+      per_page: number;
+      /**
+       * Total
+       * @description Total number of items in result
+       */
+      total: number;
     };
     /**
      * PIDI Processor
@@ -6563,20 +7120,29 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default pidi_image_processor
+       * @enum {string}
+       */
+      type: "pidi_image_processor";
       /**
        * Detect Resolution
        * @description Pixel resolution for detection
@@ -6601,12 +7167,6 @@ export type components = {
        * @default false
        */
       scribble?: boolean;
-      /**
-       * type
-       * @default pidi_image_processor
-       * @constant
-       */
-      type: "pidi_image_processor";
     };
     /**
      * Prompts from File
@@ -6623,18 +7183,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * File Path
        * @description Path to prompt text file
@@ -6644,12 +7204,12 @@ export type components = {
        * Pre Prompt
        * @description String to prepend to each prompt
        */
-      pre_prompt?: string | null;
+      pre_prompt?: string;
       /**
        * Post Prompt
        * @description String to append to each prompt
        */
-      post_prompt?: string | null;
+      post_prompt?: string;
       /**
        * Start Line
        * @description Line in the file to start start from
@@ -6663,9 +7223,9 @@ export type components = {
        */
       max_prompts?: number;
       /**
-       * type
+       * Type
        * @default prompt_from_file
-       * @constant
+       * @enum {string}
        */
       type: "prompt_from_file";
     };
@@ -6695,18 +7255,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
-       * @default false
+       * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Low
        * @description The inclusive low value
@@ -6726,9 +7286,9 @@ export type components = {
        */
       decimals?: number;
       /**
-       * type
+       * Type
        * @default rand_float
-       * @constant
+       * @enum {string}
        */
       type: "rand_float";
     };
@@ -6747,18 +7307,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default false
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Low
        * @description The inclusive low value
@@ -6772,9 +7332,9 @@ export type components = {
        */
       high?: number;
       /**
-       * type
+       * Type
        * @default rand_int
-       * @constant
+       * @enum {string}
        */
       type: "rand_int";
     };
@@ -6793,18 +7353,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default false
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Low
        * @description The inclusive low value
@@ -6829,9 +7389,9 @@ export type components = {
        */
       seed?: number;
       /**
-       * type
+       * Type
        * @default random_range
-       * @constant
+       * @enum {string}
        */
       type: "random_range";
     };
@@ -6850,18 +7410,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Start
        * @description The start of the range
@@ -6881,9 +7441,9 @@ export type components = {
        */
       step?: number;
       /**
-       * type
+       * Type
        * @default range
-       * @constant
+       * @enum {string}
        */
       type: "range";
     };
@@ -6902,18 +7462,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Start
        * @description The start of the range
@@ -6933,9 +7493,9 @@ export type components = {
        */
       step?: number;
       /**
-       * type
+       * Type
        * @default range_of_size
-       * @constant
+       * @enum {string}
        */
       type: "range_of_size";
     };
@@ -6962,19 +7522,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description Latents tensor */
+      use_cache?: boolean;
+      /**
+       * Latents
+       * @description Latents tensor
+       */
       latents?: components["schemas"]["LatentsField"];
       /**
        * Width
@@ -7000,9 +7563,9 @@ export type components = {
        */
       antialias?: boolean;
       /**
-       * type
+       * Type
        * @default lresize
-       * @constant
+       * @enum {string}
        */
       type: "lresize";
     };
@@ -7031,18 +7594,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Value
        * @description The float value
@@ -7056,9 +7619,9 @@ export type components = {
        */
       decimals?: number;
       /**
-       * type
+       * Type
        * @default round_float
-       * @constant
+       * @enum {string}
        */
       type: "round_float";
     };
@@ -7077,18 +7640,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Prompt
        * @description Prompt to be parsed by Compel to create a conditioning tensor
@@ -7142,9 +7705,9 @@ export type components = {
        */
       clip2?: components["schemas"]["ClipField"];
       /**
-       * type
+       * Type
        * @default sdxl_compel_prompt
-       * @constant
+       * @enum {string}
        */
       type: "sdxl_compel_prompt";
     };
@@ -7163,18 +7726,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * LoRA
        * @description LoRA model to load
@@ -7190,21 +7753,21 @@ export type components = {
        * UNet
        * @description UNet (scheduler, LoRAs)
        */
-      unet?: components["schemas"]["UNetField"] | null;
+      unet?: components["schemas"]["UNetField"];
       /**
        * CLIP 1
        * @description CLIP (tokenizer, text encoder, LoRAs) and skipped layer count
        */
-      clip?: components["schemas"]["ClipField"] | null;
+      clip?: components["schemas"]["ClipField"];
       /**
        * CLIP 2
        * @description CLIP (tokenizer, text encoder, LoRAs) and skipped layer count
        */
-      clip2?: components["schemas"]["ClipField"] | null;
+      clip2?: components["schemas"]["ClipField"];
       /**
-       * type
+       * Type
        * @default sdxl_lora_loader
-       * @constant
+       * @enum {string}
        */
       type: "sdxl_lora_loader";
     };
@@ -7217,21 +7780,21 @@ export type components = {
        * UNet
        * @description UNet (scheduler, LoRAs)
        */
-      unet?: components["schemas"]["UNetField"] | null;
+      unet?: components["schemas"]["UNetField"];
       /**
        * CLIP 1
        * @description CLIP (tokenizer, text encoder, LoRAs) and skipped layer count
        */
-      clip?: components["schemas"]["ClipField"] | null;
+      clip?: components["schemas"]["ClipField"];
       /**
        * CLIP 2
        * @description CLIP (tokenizer, text encoder, LoRAs) and skipped layer count
        */
-      clip2?: components["schemas"]["ClipField"] | null;
+      clip2?: components["schemas"]["ClipField"];
       /**
-       * type
+       * Type
        * @default sdxl_lora_loader_output
-       * @constant
+       * @enum {string}
        */
       type: "sdxl_lora_loader_output";
     };
@@ -7250,24 +7813,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description SDXL Main model (UNet, VAE, CLIP1, CLIP2) to load */
+      use_cache?: boolean;
+      /**
+       * Model
+       * @description SDXL Main model (UNet, VAE, CLIP1, CLIP2) to load
+       */
       model: components["schemas"]["MainModelField"];
       /**
-       * type
+       * Type
        * @default sdxl_model_loader
-       * @constant
+       * @enum {string}
        */
       type: "sdxl_model_loader";
     };
@@ -7297,9 +7863,9 @@ export type components = {
        */
       vae: components["schemas"]["VaeField"];
       /**
-       * type
+       * Type
        * @default sdxl_model_loader_output
-       * @constant
+       * @enum {string}
        */
       type: "sdxl_model_loader_output";
     };
@@ -7318,18 +7884,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Style
        * @description Prompt to be parsed by Compel to create a conditioning tensor
@@ -7362,12 +7928,15 @@ export type components = {
        * @default 6
        */
       aesthetic_score?: number;
-      /** @description CLIP (tokenizer, text encoder, LoRAs) and skipped layer count */
+      /**
+       * Clip2
+       * @description CLIP (tokenizer, text encoder, LoRAs) and skipped layer count
+       */
       clip2?: components["schemas"]["ClipField"];
       /**
-       * type
+       * Type
        * @default sdxl_refiner_compel_prompt
-       * @constant
+       * @enum {string}
        */
       type: "sdxl_refiner_compel_prompt";
     };
@@ -7386,24 +7955,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description SDXL Refiner Main Modde (UNet, VAE, CLIP2) to load */
+      use_cache?: boolean;
+      /**
+       * Model
+       * @description SDXL Refiner Main Modde (UNet, VAE, CLIP2) to load
+       */
       model: components["schemas"]["MainModelField"];
       /**
-       * type
+       * Type
        * @default sdxl_refiner_model_loader
-       * @constant
+       * @enum {string}
        */
       type: "sdxl_refiner_model_loader";
     };
@@ -7428,9 +8000,9 @@ export type components = {
        */
       vae: components["schemas"]["VaeField"];
       /**
-       * type
+       * Type
        * @default sdxl_refiner_model_loader_output
-       * @constant
+       * @enum {string}
        */
       type: "sdxl_refiner_model_loader_output";
     };
@@ -7449,28 +8021,37 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default false
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
-      image?: components["schemas"]["ImageField"];
-      /** @description The board to save the image to */
-      board?: components["schemas"]["BoardField"] | null;
-      /** @description Optional core metadata to be written to image */
-      metadata?: components["schemas"]["CoreMetadata"] | null;
+      use_cache?: boolean;
       /**
-       * type
+       * Image
+       * @description The image to process
+       */
+      image?: components["schemas"]["ImageField"];
+      /**
+       * Board
+       * @description The board to save the image to
+       */
+      board?: components["schemas"]["BoardField"];
+      /**
+       * Metadata
+       * @description Optional core metadata to be written to image
+       */
+      metadata?: components["schemas"]["CoreMetadata"];
+      /**
+       * Type
        * @default save_image
-       * @constant
+       * @enum {string}
        */
       type: "save_image";
     };
@@ -7489,19 +8070,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description Latents tensor */
+      use_cache?: boolean;
+      /**
+       * Latents
+       * @description Latents tensor
+       */
       latents?: components["schemas"]["LatentsField"];
       /**
        * Scale Factor
@@ -7522,9 +8106,9 @@ export type components = {
        */
       antialias?: boolean;
       /**
-       * type
+       * Type
        * @default lscale
-       * @constant
+       * @enum {string}
        */
       type: "lscale";
     };
@@ -7543,18 +8127,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Scheduler
        * @description Scheduler to use during inference
@@ -7563,13 +8147,18 @@ export type components = {
        */
       scheduler?: "ddim" | "ddpm" | "deis" | "lms" | "lms_k" | "pndm" | "heun" | "heun_k" | "euler" | "euler_k" | "euler_a" | "kdpm_2" | "kdpm_2_a" | "dpmpp_2s" | "dpmpp_2s_k" | "dpmpp_2m" | "dpmpp_2m_k" | "dpmpp_2m_sde" | "dpmpp_2m_sde_k" | "dpmpp_sde" | "dpmpp_sde_k" | "unipc";
       /**
-       * type
+       * Type
        * @default scheduler
-       * @constant
+       * @enum {string}
        */
       type: "scheduler";
     };
-    /** SchedulerOutput */
+    /**
+     * SchedulerOutput
+     * @description Base class for all invocation outputs.
+     *
+     * All invocation outputs must use the `@invocation_output` decorator to provide their unique type.
+     */
     SchedulerOutput: {
       /**
        * Scheduler
@@ -7578,14 +8167,15 @@ export type components = {
        */
       scheduler: "ddim" | "ddpm" | "deis" | "lms" | "lms_k" | "pndm" | "heun" | "heun_k" | "euler" | "euler_k" | "euler_a" | "kdpm_2" | "kdpm_2_a" | "dpmpp_2s" | "dpmpp_2s_k" | "dpmpp_2m" | "dpmpp_2m_k" | "dpmpp_2m_sde" | "dpmpp_2m_sde_k" | "dpmpp_sde" | "dpmpp_sde_k" | "unipc";
       /**
-       * type
+       * Type
        * @default scheduler_output
-       * @constant
+       * @enum {string}
        */
       type: "scheduler_output";
     };
     /**
      * SchedulerPredictionType
+     * @description An enumeration.
      * @enum {string}
      */
     SchedulerPredictionType: "epsilon" | "v_prediction" | "sample";
@@ -7604,28 +8194,28 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * UNet
        * @description UNet (scheduler, LoRAs)
        */
-      unet?: components["schemas"]["UNetField"] | null;
+      unet?: components["schemas"]["UNetField"];
       /**
        * VAE
        * @description VAE model to load
        */
-      vae?: components["schemas"]["VaeField"] | null;
+      vae?: components["schemas"]["VaeField"];
       /**
        * Seamless Y
        * @description Specify whether Y axis is seamless
@@ -7639,9 +8229,9 @@ export type components = {
        */
       seamless_x?: boolean;
       /**
-       * type
+       * Type
        * @default seamless
-       * @constant
+       * @enum {string}
        */
       type: "seamless";
     };
@@ -7654,16 +8244,16 @@ export type components = {
        * UNet
        * @description UNet (scheduler, LoRAs)
        */
-      unet?: components["schemas"]["UNetField"] | null;
+      unet?: components["schemas"]["UNetField"];
       /**
        * VAE
        * @description VAE
        */
-      vae?: components["schemas"]["VaeField"] | null;
+      vae?: components["schemas"]["VaeField"];
       /**
-       * type
+       * Type
        * @default seamless_output
-       * @constant
+       * @enum {string}
        */
       type: "seamless_output";
     };
@@ -7682,24 +8272,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
       /**
-       * type
+       * Type
        * @default segment_anything_processor
-       * @constant
+       * @enum {string}
        */
       type: "segment_anything_processor";
     };
@@ -7724,7 +8317,10 @@ export type components = {
       queue: components["schemas"]["SessionQueueStatus"];
       processor: components["schemas"]["SessionProcessorStatus"];
     };
-    /** SessionQueueItem */
+    /**
+     * SessionQueueItem
+     * @description Session queue item without the full graph. Used for serialization.
+     */
     SessionQueueItem: {
       /**
        * Item Id
@@ -7758,7 +8354,7 @@ export type components = {
        * Error
        * @description The error message if this queue item errored
        */
-      error?: string | null;
+      error?: string;
       /**
        * Created At
        * @description When this queue item was created
@@ -7773,12 +8369,12 @@ export type components = {
        * Started At
        * @description When this queue item was started
        */
-      started_at?: string | null;
+      started_at?: string;
       /**
        * Completed At
        * @description When this queue item was completed
        */
-      completed_at?: string | null;
+      completed_at?: string;
       /**
        * Queue Id
        * @description The id of the queue with which this item is associated
@@ -7788,11 +8384,17 @@ export type components = {
        * Field Values
        * @description The field values that were used for this queue item
        */
-      field_values?: components["schemas"]["NodeFieldValue"][] | null;
-      /** @description The fully-populated session to be executed */
+      field_values?: components["schemas"]["NodeFieldValue"][];
+      /**
+       * Session
+       * @description The fully-populated session to be executed
+       */
       session: components["schemas"]["GraphExecutionState"];
     };
-    /** SessionQueueItemDTO */
+    /**
+     * SessionQueueItemDTO
+     * @description Session queue item without the full graph. Used for serialization.
+     */
     SessionQueueItemDTO: {
       /**
        * Item Id
@@ -7826,7 +8428,7 @@ export type components = {
        * Error
        * @description The error message if this queue item errored
        */
-      error?: string | null;
+      error?: string;
       /**
        * Created At
        * @description When this queue item was created
@@ -7841,12 +8443,12 @@ export type components = {
        * Started At
        * @description When this queue item was started
        */
-      started_at?: string | null;
+      started_at?: string;
       /**
        * Completed At
        * @description When this queue item was completed
        */
-      completed_at?: string | null;
+      completed_at?: string;
       /**
        * Queue Id
        * @description The id of the queue with which this item is associated
@@ -7856,7 +8458,7 @@ export type components = {
        * Field Values
        * @description The field values that were used for this queue item
        */
-      field_values?: components["schemas"]["NodeFieldValue"][] | null;
+      field_values?: components["schemas"]["NodeFieldValue"][];
     };
     /** SessionQueueStatus */
     SessionQueueStatus: {
@@ -7869,17 +8471,17 @@ export type components = {
        * Item Id
        * @description The current queue item id
        */
-      item_id: number | null;
+      item_id?: number;
       /**
        * Batch Id
        * @description The current queue item's batch id
        */
-      batch_id: string | null;
+      batch_id?: string;
       /**
        * Session Id
        * @description The current queue item's session id
        */
-      session_id: string | null;
+      session_id?: string;
       /**
        * Pending
        * @description Number of queue items with status 'pending'
@@ -7926,24 +8528,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to show */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to show
+       */
       image?: components["schemas"]["ImageField"];
       /**
-       * type
+       * Type
        * @default show_image
-       * @constant
+       * @enum {string}
        */
       type: "show_image";
     };
@@ -7954,22 +8559,21 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default main
-       * @constant
+       * @enum {string}
        */
       model_type: "main";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /**
        * Model Format
-       * @constant
+       * @enum {string}
        */
       model_format: "checkpoint";
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
       /** Vae */
-      vae?: string | null;
+      vae?: string;
       /** Config */
       config: string;
       variant: components["schemas"]["ModelVariantType"];
@@ -7981,22 +8585,21 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default main
-       * @constant
+       * @enum {string}
        */
       model_type: "main";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /**
        * Model Format
-       * @constant
+       * @enum {string}
        */
       model_format: "diffusers";
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
       /** Vae */
-      vae?: string | null;
+      vae?: string;
       variant: components["schemas"]["ModelVariantType"];
     };
     /** StableDiffusion2ModelCheckpointConfig */
@@ -8006,22 +8609,21 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default main
-       * @constant
+       * @enum {string}
        */
       model_type: "main";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /**
        * Model Format
-       * @constant
+       * @enum {string}
        */
       model_format: "checkpoint";
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
       /** Vae */
-      vae?: string | null;
+      vae?: string;
       /** Config */
       config: string;
       variant: components["schemas"]["ModelVariantType"];
@@ -8033,22 +8635,21 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default main
-       * @constant
+       * @enum {string}
        */
       model_type: "main";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /**
        * Model Format
-       * @constant
+       * @enum {string}
        */
       model_format: "diffusers";
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
       /** Vae */
-      vae?: string | null;
+      vae?: string;
       variant: components["schemas"]["ModelVariantType"];
     };
     /** StableDiffusionXLModelCheckpointConfig */
@@ -8058,22 +8659,21 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default main
-       * @constant
+       * @enum {string}
        */
       model_type: "main";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /**
        * Model Format
-       * @constant
+       * @enum {string}
        */
       model_format: "checkpoint";
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
       /** Vae */
-      vae?: string | null;
+      vae?: string;
       /** Config */
       config: string;
       variant: components["schemas"]["ModelVariantType"];
@@ -8085,22 +8685,21 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default main
-       * @constant
+       * @enum {string}
        */
       model_type: "main";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /**
        * Model Format
-       * @constant
+       * @enum {string}
        */
       model_format: "diffusers";
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
       /** Vae */
-      vae?: string | null;
+      vae?: string;
       variant: components["schemas"]["ModelVariantType"];
     };
     /**
@@ -8118,18 +8717,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Easing
        * @description The easing function to use
@@ -8171,12 +8770,12 @@ export type components = {
        * Pre Start Value
        * @description value before easing start
        */
-      pre_start_value?: number | null;
+      pre_start_value?: number;
       /**
        * Post End Value
        * @description value after easing end
        */
-      post_end_value?: number | null;
+      post_end_value?: number;
       /**
        * Mirror
        * @description include mirror of easing function
@@ -8190,9 +8789,9 @@ export type components = {
        */
       show_easing_plot?: boolean;
       /**
-       * type
+       * Type
        * @default step_param_easing
-       * @constant
+       * @enum {string}
        */
       type: "step_param_easing";
     };
@@ -8212,9 +8811,9 @@ export type components = {
        */
       string_2: string;
       /**
-       * type
+       * Type
        * @default string_2_output
-       * @constant
+       * @enum {string}
        */
       type: "string_2_output";
     };
@@ -8233,27 +8832,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Collection
        * @description The collection of string values
        */
       collection?: string[];
       /**
-       * type
+       * Type
        * @default string_collection
-       * @constant
+       * @enum {string}
        */
       type: "string_collection";
     };
@@ -8268,9 +8867,9 @@ export type components = {
        */
       collection: string[];
       /**
-       * type
+       * Type
        * @default string_collection_output
-       * @constant
+       * @enum {string}
        */
       type: "string_collection_output";
     };
@@ -8289,18 +8888,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * Value
        * @description The string value
@@ -8308,9 +8907,9 @@ export type components = {
        */
       value?: string;
       /**
-       * type
+       * Type
        * @default string
-       * @constant
+       * @enum {string}
        */
       type: "string";
     };
@@ -8329,18 +8928,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * String Left
        * @description String Left
@@ -8354,9 +8953,9 @@ export type components = {
        */
       string_right?: string;
       /**
-       * type
+       * Type
        * @default string_join
-       * @constant
+       * @enum {string}
        */
       type: "string_join";
     };
@@ -8375,18 +8974,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * String Left
        * @description String Left
@@ -8406,9 +9005,9 @@ export type components = {
        */
       string_right?: string;
       /**
-       * type
+       * Type
        * @default string_join_three
-       * @constant
+       * @enum {string}
        */
       type: "string_join_three";
     };
@@ -8423,9 +9022,9 @@ export type components = {
        */
       value: string;
       /**
-       * type
+       * Type
        * @default string_output
-       * @constant
+       * @enum {string}
        */
       type: "string_output";
     };
@@ -8445,9 +9044,9 @@ export type components = {
        */
       negative_string: string;
       /**
-       * type
+       * Type
        * @default string_pos_neg_output
-       * @constant
+       * @enum {string}
        */
       type: "string_pos_neg_output";
     };
@@ -8466,18 +9065,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * String
        * @description String to work on
@@ -8503,9 +9102,9 @@ export type components = {
        */
       use_regex?: boolean;
       /**
-       * type
+       * Type
        * @default string_replace
-       * @constant
+       * @enum {string}
        */
       type: "string_replace";
     };
@@ -8524,18 +9123,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * String
        * @description String to split
@@ -8549,9 +9148,9 @@ export type components = {
        */
       delimiter?: string;
       /**
-       * type
+       * Type
        * @default string_split
-       * @constant
+       * @enum {string}
        */
       type: "string_split";
     };
@@ -8570,18 +9169,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * String
        * @description String to split
@@ -8589,14 +9188,15 @@ export type components = {
        */
       string?: string;
       /**
-       * type
+       * Type
        * @default string_split_neg
-       * @constant
+       * @enum {string}
        */
       type: "string_split_neg";
     };
     /**
      * SubModelType
+     * @description An enumeration.
      * @enum {string}
      */
     SubModelType: "unet" | "text_encoder" | "text_encoder_2" | "tokenizer" | "tokenizer_2" | "vae" | "vae_decoder" | "vae_encoder" | "scheduler" | "safety_checker";
@@ -8615,18 +9215,18 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * A
        * @description The first number
@@ -8640,17 +9240,23 @@ export type components = {
        */
       b?: number;
       /**
-       * type
+       * Type
        * @default sub
-       * @constant
+       * @enum {string}
        */
       type: "sub";
     };
     /** T2IAdapterField */
     T2IAdapterField: {
-      /** @description The T2I-Adapter image prompt. */
+      /**
+       * Image
+       * @description The T2I-Adapter image prompt.
+       */
       image: components["schemas"]["ImageField"];
-      /** @description The T2I-Adapter model to use. */
+      /**
+       * T2I Adapter Model
+       * @description The T2I-Adapter model to use.
+       */
       t2i_adapter_model: components["schemas"]["T2IAdapterModelField"];
       /**
        * Weight
@@ -8693,19 +9299,22 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The IP-Adapter image prompt. */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The IP-Adapter image prompt.
+       */
       image?: components["schemas"]["ImageField"];
       /**
        * T2I-Adapter Model
@@ -8738,9 +9347,9 @@ export type components = {
        */
       resize_mode?: "just_resize" | "crop_resize" | "fill_resize" | "just_resize_simple";
       /**
-       * type
+       * Type
        * @default t2i_adapter
-       * @constant
+       * @enum {string}
        */
       type: "t2i_adapter";
     };
@@ -8751,20 +9360,19 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default t2i_adapter
-       * @constant
+       * @enum {string}
        */
       model_type: "t2i_adapter";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /**
        * Model Format
-       * @constant
+       * @enum {string}
        */
       model_format: "diffusers";
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
     };
     /** T2IAdapterModelField */
     T2IAdapterModelField: {
@@ -8776,7 +9384,12 @@ export type components = {
       /** @description Base model */
       base_model: components["schemas"]["BaseModelType"];
     };
-    /** T2IAdapterOutput */
+    /**
+     * T2IAdapterOutput
+     * @description Base class for all invocation outputs.
+     *
+     * All invocation outputs must use the `@invocation_output` decorator to provide their unique type.
+     */
     T2IAdapterOutput: {
       /**
        * T2I Adapter
@@ -8784,9 +9397,9 @@ export type components = {
        */
       t2i_adapter: components["schemas"]["T2IAdapterField"];
       /**
-       * type
+       * Type
        * @default t2i_adapter_output
-       * @constant
+       * @enum {string}
        */
       type: "t2i_adapter_output";
     };
@@ -8797,17 +9410,16 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default embedding
-       * @constant
+       * @enum {string}
        */
       model_type: "embedding";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       /** Model Format */
       model_format: null;
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
     };
     /**
      * Tile Resample Processor
@@ -8824,38 +9436,47 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
+      /**
+       * Type
+       * @default tile_image_processor
+       * @enum {string}
+       */
+      type: "tile_image_processor";
       /**
        * Down Sampling Rate
        * @description Down sampling rate
        * @default 1
        */
       down_sampling_rate?: number;
-      /**
-       * type
-       * @default tile_image_processor
-       * @constant
-       */
-      type: "tile_image_processor";
     };
     /** UNetField */
     UNetField: {
-      /** @description Info to load unet submodel */
+      /**
+       * Unet
+       * @description Info to load unet submodel
+       */
       unet: components["schemas"]["ModelInfo"];
-      /** @description Info to load scheduler submodel */
+      /**
+       * Scheduler
+       * @description Info to load scheduler submodel
+       */
       scheduler: components["schemas"]["ModelInfo"];
       /**
        * Loras
@@ -8896,7 +9517,10 @@ export type components = {
     };
     /** VaeField */
     VaeField: {
-      /** @description Info to load vae submodel */
+      /**
+       * Vae
+       * @description Info to load vae submodel
+       */
       vae: components["schemas"]["ModelInfo"];
       /**
        * Seamless Axes
@@ -8919,27 +9543,27 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
+      use_cache?: boolean;
       /**
        * VAE
        * @description VAE model to load
        */
       vae_model: components["schemas"]["VAEModelField"];
       /**
-       * type
+       * Type
        * @default vae_loader
-       * @constant
+       * @enum {string}
        */
       type: "vae_loader";
     };
@@ -8954,9 +9578,9 @@ export type components = {
        */
       vae: components["schemas"]["VaeField"];
       /**
-       * type
+       * Type
        * @default vae_loader_output
-       * @constant
+       * @enum {string}
        */
       type: "vae_loader_output";
     };
@@ -8967,19 +9591,19 @@ export type components = {
       base_model: components["schemas"]["BaseModelType"];
       /**
        * Model Type
-       * @default vae
-       * @constant
+       * @enum {string}
        */
       model_type: "vae";
       /** Path */
       path: string;
       /** Description */
-      description?: string | null;
+      description?: string;
       model_format: components["schemas"]["VaeModelFormat"];
-      error?: components["schemas"]["ModelError"] | null;
+      error?: components["schemas"]["ModelError"];
     };
     /**
      * VaeModelFormat
+     * @description An enumeration.
      * @enum {string}
      */
     VaeModelFormat: "checkpoint" | "diffusers";
@@ -9007,26 +9631,56 @@ export type components = {
        * @description Whether or not this is an intermediate invocation.
        * @default false
        */
-      is_intermediate?: boolean | null;
+      is_intermediate?: boolean;
       /**
        * Workflow
        * @description The workflow to save with the image
        */
-      workflow?: string | null;
+      workflow?: string;
       /**
        * Use Cache
        * @description Whether or not to use the cache
        * @default true
        */
-      use_cache?: boolean | null;
-      /** @description The image to process */
+      use_cache?: boolean;
+      /**
+       * Image
+       * @description The image to process
+       */
       image?: components["schemas"]["ImageField"];
       /**
-       * type
+       * Type
        * @default zoe_depth_image_processor
-       * @constant
+       * @enum {string}
        */
       type: "zoe_depth_image_processor";
+    };
+    /**
+     * UIConfigBase
+     * @description Provides additional node configuration to the UI.
+     * This is used internally by the @invocation decorator logic. Do not use this directly.
+     */
+    UIConfigBase: {
+      /**
+       * Tags
+       * @description The node's tags
+       */
+      tags?: string[];
+      /**
+       * Title
+       * @description The node's display name
+       */
+      title?: string;
+      /**
+       * Category
+       * @description The node's category
+       */
+      category?: string;
+      /**
+       * Version
+       * @description The node's version. Should be a valid semver string e.g. "1.0.0" or "3.8.13".
+       */
+      version?: string;
     };
     /**
      * Input
@@ -9038,48 +9692,18 @@ export type components = {
      */
     Input: "connection" | "direct" | "any";
     /**
-     * UIComponent
-     * @description The type of UI component to use for a field, used to override the default components, which are     inferred from the field type.
-     * @enum {string}
-     */
-    UIComponent: "none" | "textarea" | "slider";
-    /**
-     * UIConfigBase
-     * @description Provides additional node configuration to the UI.
-     * This is used internally by the @invocation decorator logic. Do not use this directly.
-     */
-    UIConfigBase: {
-      /**
-       * Tags
-       * @description The node's tags
-       */
-      tags: string[] | null;
-      /**
-       * Title
-       * @description The node's display name
-       * @default null
-       */
-      title: string | null;
-      /**
-       * Category
-       * @description The node's category
-       * @default null
-       */
-      category: string | null;
-      /**
-       * Version
-       * @description The node's version. Should be a valid semver string e.g. "1.0.0" or "3.8.13".
-       * @default null
-       */
-      version: string | null;
-    };
-    /**
      * UIType
      * @description Type hints for the UI.
      * If a field should be provided a data type that does not exactly match the python type of the field,     use this to provide the type that should be used instead. See the node development docs for detail     on adding a new field type, which involves client-side changes.
      * @enum {string}
      */
     UIType: "boolean" | "ColorField" | "ConditioningField" | "ControlField" | "float" | "ImageField" | "integer" | "LatentsField" | "string" | "BooleanCollection" | "ColorCollection" | "ConditioningCollection" | "ControlCollection" | "FloatCollection" | "ImageCollection" | "IntegerCollection" | "LatentsCollection" | "StringCollection" | "BooleanPolymorphic" | "ColorPolymorphic" | "ConditioningPolymorphic" | "ControlPolymorphic" | "FloatPolymorphic" | "ImagePolymorphic" | "IntegerPolymorphic" | "LatentsPolymorphic" | "StringPolymorphic" | "MainModelField" | "SDXLMainModelField" | "SDXLRefinerModelField" | "ONNXModelField" | "VaeModelField" | "LoRAModelField" | "ControlNetModelField" | "IPAdapterModelField" | "UNetField" | "VaeField" | "ClipField" | "Collection" | "CollectionItem" | "enum" | "Scheduler" | "WorkflowField" | "IsIntermediate" | "MetadataField" | "BoardField";
+    /**
+     * UIComponent
+     * @description The type of UI component to use for a field, used to override the default components, which are     inferred from the field type.
+     * @enum {string}
+     */
+    UIComponent: "none" | "textarea" | "slider";
     /**
      * _InputField
      * @description *DO NOT USE*
@@ -9091,16 +9715,16 @@ export type components = {
       input: components["schemas"]["Input"];
       /** Ui Hidden */
       ui_hidden: boolean;
-      ui_type: components["schemas"]["UIType"] | null;
-      ui_component: components["schemas"]["UIComponent"] | null;
+      ui_type?: components["schemas"]["UIType"];
+      ui_component?: components["schemas"]["UIComponent"];
       /** Ui Order */
-      ui_order: number | null;
+      ui_order?: number;
       /** Ui Choice Labels */
-      ui_choice_labels: {
+      ui_choice_labels?: {
         [key: string]: string;
-      } | null;
+      };
       /** Item Default */
-      item_default: unknown;
+      item_default?: unknown;
     };
     /**
      * _OutputField
@@ -9112,28 +9736,10 @@ export type components = {
     _OutputField: {
       /** Ui Hidden */
       ui_hidden: boolean;
-      ui_type: components["schemas"]["UIType"] | null;
+      ui_type?: components["schemas"]["UIType"];
       /** Ui Order */
-      ui_order: number | null;
+      ui_order?: number;
     };
-    /**
-     * StableDiffusion1ModelFormat
-     * @description An enumeration.
-     * @enum {string}
-     */
-    StableDiffusion1ModelFormat: "checkpoint" | "diffusers";
-    /**
-     * T2IAdapterModelFormat
-     * @description An enumeration.
-     * @enum {string}
-     */
-    T2IAdapterModelFormat: "diffusers";
-    /**
-     * ControlNetModelFormat
-     * @description An enumeration.
-     * @enum {string}
-     */
-    ControlNetModelFormat: "checkpoint" | "diffusers";
     /**
      * IPAdapterModelFormat
      * @description An enumeration.
@@ -9141,17 +9747,23 @@ export type components = {
      */
     IPAdapterModelFormat: "invokeai";
     /**
+     * StableDiffusion1ModelFormat
+     * @description An enumeration.
+     * @enum {string}
+     */
+    StableDiffusion1ModelFormat: "checkpoint" | "diffusers";
+    /**
+     * ControlNetModelFormat
+     * @description An enumeration.
+     * @enum {string}
+     */
+    ControlNetModelFormat: "checkpoint" | "diffusers";
+    /**
      * CLIPVisionModelFormat
      * @description An enumeration.
      * @enum {string}
      */
     CLIPVisionModelFormat: "diffusers";
-    /**
-     * StableDiffusionOnnxModelFormat
-     * @description An enumeration.
-     * @enum {string}
-     */
-    StableDiffusionOnnxModelFormat: "olive" | "onnx";
     /**
      * StableDiffusion2ModelFormat
      * @description An enumeration.
@@ -9159,11 +9771,23 @@ export type components = {
      */
     StableDiffusion2ModelFormat: "checkpoint" | "diffusers";
     /**
+     * T2IAdapterModelFormat
+     * @description An enumeration.
+     * @enum {string}
+     */
+    T2IAdapterModelFormat: "diffusers";
+    /**
      * StableDiffusionXLModelFormat
      * @description An enumeration.
      * @enum {string}
      */
     StableDiffusionXLModelFormat: "checkpoint" | "diffusers";
+    /**
+     * StableDiffusionOnnxModelFormat
+     * @description An enumeration.
+     * @enum {string}
+     */
+    StableDiffusionOnnxModelFormat: "olive" | "onnx";
   };
   responses: never;
   parameters: never;
@@ -9179,7 +9803,75 @@ export type external = Record<string, never>;
 export type operations = {
 
   /**
+   * List Sessions
+   * @deprecated
+   * @description Gets a list of sessions, optionally searching
+   */
+  list_sessions: {
+    parameters: {
+      query?: {
+        /** @description The page of results to get */
+        page?: number;
+        /** @description The number of results per page */
+        per_page?: number;
+        /** @description The query string to search for */
+        query?: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PaginatedResults_GraphExecutionState_"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Create Session
+   * @deprecated
+   * @description Creates a new session, optionally initializing it with an invocation graph
+   */
+  create_session: {
+    parameters: {
+      query?: {
+        /** @description The id of the queue to associate the session with */
+        queue_id?: string;
+      };
+    };
+    requestBody?: {
+      content: {
+        "application/json": components["schemas"]["Graph"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["GraphExecutionState"];
+        };
+      };
+      /** @description Invalid json */
+      400: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
    * Get Session
+   * @deprecated
    * @description Gets a session
    */
   get_session: {
@@ -9198,6 +9890,284 @@ export type operations = {
       };
       /** @description Session not found */
       404: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Add Node
+   * @deprecated
+   * @description Adds a node to the graph
+   */
+  add_node: {
+    parameters: {
+      path: {
+        /** @description The id of the session */
+        session_id: string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["BooleanInvocation"] | components["schemas"]["BooleanCollectionInvocation"] | components["schemas"]["IntegerInvocation"] | components["schemas"]["IntegerCollectionInvocation"] | components["schemas"]["FloatInvocation"] | components["schemas"]["FloatCollectionInvocation"] | components["schemas"]["StringInvocation"] | components["schemas"]["StringCollectionInvocation"] | components["schemas"]["ImageInvocation"] | components["schemas"]["ImageCollectionInvocation"] | components["schemas"]["LatentsInvocation"] | components["schemas"]["LatentsCollectionInvocation"] | components["schemas"]["ColorInvocation"] | components["schemas"]["ConditioningInvocation"] | components["schemas"]["ConditioningCollectionInvocation"] | components["schemas"]["ControlNetInvocation"] | components["schemas"]["ImageProcessorInvocation"] | components["schemas"]["IPAdapterInvocation"] | components["schemas"]["MainModelLoaderInvocation"] | components["schemas"]["LoraLoaderInvocation"] | components["schemas"]["SDXLLoraLoaderInvocation"] | components["schemas"]["VaeLoaderInvocation"] | components["schemas"]["SeamlessModeInvocation"] | components["schemas"]["T2IAdapterInvocation"] | components["schemas"]["MetadataAccumulatorInvocation"] | components["schemas"]["FaceOffInvocation"] | components["schemas"]["FaceMaskInvocation"] | components["schemas"]["FaceIdentifierInvocation"] | components["schemas"]["SDXLModelLoaderInvocation"] | components["schemas"]["SDXLRefinerModelLoaderInvocation"] | components["schemas"]["CompelInvocation"] | components["schemas"]["SDXLCompelPromptInvocation"] | components["schemas"]["SDXLRefinerCompelPromptInvocation"] | components["schemas"]["ClipSkipInvocation"] | components["schemas"]["SchedulerInvocation"] | components["schemas"]["CreateDenoiseMaskInvocation"] | components["schemas"]["DenoiseLatentsInvocation"] | components["schemas"]["LatentsToImageInvocation"] | components["schemas"]["ResizeLatentsInvocation"] | components["schemas"]["ScaleLatentsInvocation"] | components["schemas"]["ImageToLatentsInvocation"] | components["schemas"]["BlendLatentsInvocation"] | components["schemas"]["ONNXPromptInvocation"] | components["schemas"]["ONNXTextToLatentsInvocation"] | components["schemas"]["ONNXLatentsToImageInvocation"] | components["schemas"]["OnnxModelLoaderInvocation"] | components["schemas"]["ShowImageInvocation"] | components["schemas"]["BlankImageInvocation"] | components["schemas"]["ImageCropInvocation"] | components["schemas"]["ImagePasteInvocation"] | components["schemas"]["MaskFromAlphaInvocation"] | components["schemas"]["ImageMultiplyInvocation"] | components["schemas"]["ImageChannelInvocation"] | components["schemas"]["ImageConvertInvocation"] | components["schemas"]["ImageBlurInvocation"] | components["schemas"]["ImageResizeInvocation"] | components["schemas"]["ImageScaleInvocation"] | components["schemas"]["ImageLerpInvocation"] | components["schemas"]["ImageInverseLerpInvocation"] | components["schemas"]["ImageNSFWBlurInvocation"] | components["schemas"]["ImageWatermarkInvocation"] | components["schemas"]["MaskEdgeInvocation"] | components["schemas"]["MaskCombineInvocation"] | components["schemas"]["ColorCorrectInvocation"] | components["schemas"]["ImageHueAdjustmentInvocation"] | components["schemas"]["ImageChannelOffsetInvocation"] | components["schemas"]["ImageChannelMultiplyInvocation"] | components["schemas"]["SaveImageInvocation"] | components["schemas"]["DynamicPromptInvocation"] | components["schemas"]["PromptsFromFileInvocation"] | components["schemas"]["CvInpaintInvocation"] | components["schemas"]["FloatLinearRangeInvocation"] | components["schemas"]["StepParamEasingInvocation"] | components["schemas"]["AddInvocation"] | components["schemas"]["SubtractInvocation"] | components["schemas"]["MultiplyInvocation"] | components["schemas"]["DivideInvocation"] | components["schemas"]["RandomIntInvocation"] | components["schemas"]["RandomFloatInvocation"] | components["schemas"]["FloatToIntegerInvocation"] | components["schemas"]["RoundInvocation"] | components["schemas"]["IntegerMathInvocation"] | components["schemas"]["FloatMathInvocation"] | components["schemas"]["NoiseInvocation"] | components["schemas"]["RangeInvocation"] | components["schemas"]["RangeOfSizeInvocation"] | components["schemas"]["RandomRangeInvocation"] | components["schemas"]["ESRGANInvocation"] | components["schemas"]["StringSplitNegInvocation"] | components["schemas"]["StringSplitInvocation"] | components["schemas"]["StringJoinInvocation"] | components["schemas"]["StringJoinThreeInvocation"] | components["schemas"]["StringReplaceInvocation"] | components["schemas"]["InfillColorInvocation"] | components["schemas"]["InfillTileInvocation"] | components["schemas"]["InfillPatchMatchInvocation"] | components["schemas"]["LaMaInfillInvocation"] | components["schemas"]["CV2InfillInvocation"] | components["schemas"]["GraphInvocation"] | components["schemas"]["IterateInvocation"] | components["schemas"]["CollectInvocation"] | components["schemas"]["CannyImageProcessorInvocation"] | components["schemas"]["HedImageProcessorInvocation"] | components["schemas"]["LineartImageProcessorInvocation"] | components["schemas"]["LineartAnimeImageProcessorInvocation"] | components["schemas"]["OpenposeImageProcessorInvocation"] | components["schemas"]["MidasDepthImageProcessorInvocation"] | components["schemas"]["NormalbaeImageProcessorInvocation"] | components["schemas"]["MlsdImageProcessorInvocation"] | components["schemas"]["PidiImageProcessorInvocation"] | components["schemas"]["ContentShuffleImageProcessorInvocation"] | components["schemas"]["ZoeDepthImageProcessorInvocation"] | components["schemas"]["MediapipeFaceProcessorInvocation"] | components["schemas"]["LeresImageProcessorInvocation"] | components["schemas"]["TileResamplerProcessorInvocation"] | components["schemas"]["SegmentAnythingProcessorInvocation"] | components["schemas"]["ColorMapImageProcessorInvocation"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": string;
+        };
+      };
+      /** @description Invalid node or link */
+      400: {
+        content: never;
+      };
+      /** @description Session not found */
+      404: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Update Node
+   * @deprecated
+   * @description Updates a node in the graph and removes all linked edges
+   */
+  update_node: {
+    parameters: {
+      path: {
+        /** @description The id of the session */
+        session_id: string;
+        /** @description The path to the node in the graph */
+        node_path: string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["BooleanInvocation"] | components["schemas"]["BooleanCollectionInvocation"] | components["schemas"]["IntegerInvocation"] | components["schemas"]["IntegerCollectionInvocation"] | components["schemas"]["FloatInvocation"] | components["schemas"]["FloatCollectionInvocation"] | components["schemas"]["StringInvocation"] | components["schemas"]["StringCollectionInvocation"] | components["schemas"]["ImageInvocation"] | components["schemas"]["ImageCollectionInvocation"] | components["schemas"]["LatentsInvocation"] | components["schemas"]["LatentsCollectionInvocation"] | components["schemas"]["ColorInvocation"] | components["schemas"]["ConditioningInvocation"] | components["schemas"]["ConditioningCollectionInvocation"] | components["schemas"]["ControlNetInvocation"] | components["schemas"]["ImageProcessorInvocation"] | components["schemas"]["IPAdapterInvocation"] | components["schemas"]["MainModelLoaderInvocation"] | components["schemas"]["LoraLoaderInvocation"] | components["schemas"]["SDXLLoraLoaderInvocation"] | components["schemas"]["VaeLoaderInvocation"] | components["schemas"]["SeamlessModeInvocation"] | components["schemas"]["T2IAdapterInvocation"] | components["schemas"]["MetadataAccumulatorInvocation"] | components["schemas"]["FaceOffInvocation"] | components["schemas"]["FaceMaskInvocation"] | components["schemas"]["FaceIdentifierInvocation"] | components["schemas"]["SDXLModelLoaderInvocation"] | components["schemas"]["SDXLRefinerModelLoaderInvocation"] | components["schemas"]["CompelInvocation"] | components["schemas"]["SDXLCompelPromptInvocation"] | components["schemas"]["SDXLRefinerCompelPromptInvocation"] | components["schemas"]["ClipSkipInvocation"] | components["schemas"]["SchedulerInvocation"] | components["schemas"]["CreateDenoiseMaskInvocation"] | components["schemas"]["DenoiseLatentsInvocation"] | components["schemas"]["LatentsToImageInvocation"] | components["schemas"]["ResizeLatentsInvocation"] | components["schemas"]["ScaleLatentsInvocation"] | components["schemas"]["ImageToLatentsInvocation"] | components["schemas"]["BlendLatentsInvocation"] | components["schemas"]["ONNXPromptInvocation"] | components["schemas"]["ONNXTextToLatentsInvocation"] | components["schemas"]["ONNXLatentsToImageInvocation"] | components["schemas"]["OnnxModelLoaderInvocation"] | components["schemas"]["ShowImageInvocation"] | components["schemas"]["BlankImageInvocation"] | components["schemas"]["ImageCropInvocation"] | components["schemas"]["ImagePasteInvocation"] | components["schemas"]["MaskFromAlphaInvocation"] | components["schemas"]["ImageMultiplyInvocation"] | components["schemas"]["ImageChannelInvocation"] | components["schemas"]["ImageConvertInvocation"] | components["schemas"]["ImageBlurInvocation"] | components["schemas"]["ImageResizeInvocation"] | components["schemas"]["ImageScaleInvocation"] | components["schemas"]["ImageLerpInvocation"] | components["schemas"]["ImageInverseLerpInvocation"] | components["schemas"]["ImageNSFWBlurInvocation"] | components["schemas"]["ImageWatermarkInvocation"] | components["schemas"]["MaskEdgeInvocation"] | components["schemas"]["MaskCombineInvocation"] | components["schemas"]["ColorCorrectInvocation"] | components["schemas"]["ImageHueAdjustmentInvocation"] | components["schemas"]["ImageChannelOffsetInvocation"] | components["schemas"]["ImageChannelMultiplyInvocation"] | components["schemas"]["SaveImageInvocation"] | components["schemas"]["DynamicPromptInvocation"] | components["schemas"]["PromptsFromFileInvocation"] | components["schemas"]["CvInpaintInvocation"] | components["schemas"]["FloatLinearRangeInvocation"] | components["schemas"]["StepParamEasingInvocation"] | components["schemas"]["AddInvocation"] | components["schemas"]["SubtractInvocation"] | components["schemas"]["MultiplyInvocation"] | components["schemas"]["DivideInvocation"] | components["schemas"]["RandomIntInvocation"] | components["schemas"]["RandomFloatInvocation"] | components["schemas"]["FloatToIntegerInvocation"] | components["schemas"]["RoundInvocation"] | components["schemas"]["IntegerMathInvocation"] | components["schemas"]["FloatMathInvocation"] | components["schemas"]["NoiseInvocation"] | components["schemas"]["RangeInvocation"] | components["schemas"]["RangeOfSizeInvocation"] | components["schemas"]["RandomRangeInvocation"] | components["schemas"]["ESRGANInvocation"] | components["schemas"]["StringSplitNegInvocation"] | components["schemas"]["StringSplitInvocation"] | components["schemas"]["StringJoinInvocation"] | components["schemas"]["StringJoinThreeInvocation"] | components["schemas"]["StringReplaceInvocation"] | components["schemas"]["InfillColorInvocation"] | components["schemas"]["InfillTileInvocation"] | components["schemas"]["InfillPatchMatchInvocation"] | components["schemas"]["LaMaInfillInvocation"] | components["schemas"]["CV2InfillInvocation"] | components["schemas"]["GraphInvocation"] | components["schemas"]["IterateInvocation"] | components["schemas"]["CollectInvocation"] | components["schemas"]["CannyImageProcessorInvocation"] | components["schemas"]["HedImageProcessorInvocation"] | components["schemas"]["LineartImageProcessorInvocation"] | components["schemas"]["LineartAnimeImageProcessorInvocation"] | components["schemas"]["OpenposeImageProcessorInvocation"] | components["schemas"]["MidasDepthImageProcessorInvocation"] | components["schemas"]["NormalbaeImageProcessorInvocation"] | components["schemas"]["MlsdImageProcessorInvocation"] | components["schemas"]["PidiImageProcessorInvocation"] | components["schemas"]["ContentShuffleImageProcessorInvocation"] | components["schemas"]["ZoeDepthImageProcessorInvocation"] | components["schemas"]["MediapipeFaceProcessorInvocation"] | components["schemas"]["LeresImageProcessorInvocation"] | components["schemas"]["TileResamplerProcessorInvocation"] | components["schemas"]["SegmentAnythingProcessorInvocation"] | components["schemas"]["ColorMapImageProcessorInvocation"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["GraphExecutionState"];
+        };
+      };
+      /** @description Invalid node or link */
+      400: {
+        content: never;
+      };
+      /** @description Session not found */
+      404: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Delete Node
+   * @deprecated
+   * @description Deletes a node in the graph and removes all linked edges
+   */
+  delete_node: {
+    parameters: {
+      path: {
+        /** @description The id of the session */
+        session_id: string;
+        /** @description The path to the node to delete */
+        node_path: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["GraphExecutionState"];
+        };
+      };
+      /** @description Invalid node or link */
+      400: {
+        content: never;
+      };
+      /** @description Session not found */
+      404: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Add Edge
+   * @deprecated
+   * @description Adds an edge to the graph
+   */
+  add_edge: {
+    parameters: {
+      path: {
+        /** @description The id of the session */
+        session_id: string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["Edge"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["GraphExecutionState"];
+        };
+      };
+      /** @description Invalid node or link */
+      400: {
+        content: never;
+      };
+      /** @description Session not found */
+      404: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Delete Edge
+   * @deprecated
+   * @description Deletes an edge from the graph
+   */
+  delete_edge: {
+    parameters: {
+      path: {
+        /** @description The id of the session */
+        session_id: string;
+        /** @description The id of the node the edge is coming from */
+        from_node_id: string;
+        /** @description The field of the node the edge is coming from */
+        from_field: string;
+        /** @description The id of the node the edge is going to */
+        to_node_id: string;
+        /** @description The field of the node the edge is going to */
+        to_field: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["GraphExecutionState"];
+        };
+      };
+      /** @description Invalid node or link */
+      400: {
+        content: never;
+      };
+      /** @description Session not found */
+      404: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Invoke Session
+   * @deprecated
+   * @description Invokes a session
+   */
+  invoke_session: {
+    parameters: {
+      query: {
+        /** @description The id of the queue to associate the session with */
+        queue_id: string;
+        /** @description Whether or not to invoke all remaining invocations */
+        all?: boolean;
+      };
+      path: {
+        /** @description The id of the session to invoke */
+        session_id: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": unknown;
+        };
+      };
+      /** @description The invocation is queued */
+      202: {
+        content: never;
+      };
+      /** @description The session has no invocations ready to invoke */
+      400: {
+        content: never;
+      };
+      /** @description Session not found */
+      404: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
+   * Cancel Session Invoke
+   * @deprecated
+   * @description Invokes a session
+   */
+  cancel_session_invoke: {
+    parameters: {
+      path: {
+        /** @description The id of the session to cancel */
+        session_id: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": unknown;
+        };
+      };
+      /** @description The invocation is canceled */
+      202: {
         content: never;
       };
       /** @description Validation Error */
@@ -9241,9 +10211,9 @@ export type operations = {
     parameters: {
       query?: {
         /** @description Base models to include */
-        base_models?: components["schemas"]["BaseModelType"][] | null;
+        base_models?: components["schemas"]["BaseModelType"][];
         /** @description The type of model to get */
-        model_type?: components["schemas"]["ModelType"] | null;
+        model_type?: components["schemas"]["ModelType"];
       };
     };
     responses: {
@@ -9426,7 +10396,7 @@ export type operations = {
     parameters: {
       query?: {
         /** @description Save the converted model to the designated directory */
-        convert_dest_directory?: string | null;
+        convert_dest_directory?: string;
       };
       path: {
         /** @description Base model */
@@ -9567,11 +10537,11 @@ export type operations = {
         /** @description Whether this is an intermediate image */
         is_intermediate: boolean;
         /** @description The board to add this image to, if any */
-        board_id?: string | null;
+        board_id?: string;
         /** @description The session ID associated with this upload, if any */
-        session_id?: string | null;
+        session_id?: string;
         /** @description Whether to crop the image */
-        crop_visible?: boolean | null;
+        crop_visible?: boolean;
       };
     };
     requestBody: {
@@ -9682,20 +10652,6 @@ export type operations = {
     };
   };
   /**
-   * Get Intermediates Count
-   * @description Gets the count of intermediate images
-   */
-  get_intermediates_count: {
-    responses: {
-      /** @description Successful Response */
-      200: {
-        content: {
-          "application/json": number;
-        };
-      };
-    };
-  };
-  /**
    * Clear Intermediates
    * @description Clears all intermediates
    */
@@ -9704,7 +10660,7 @@ export type operations = {
       /** @description Successful Response */
       200: {
         content: {
-          "application/json": number;
+          "application/json": unknown;
         };
       };
     };
@@ -9829,13 +10785,13 @@ export type operations = {
     parameters: {
       query?: {
         /** @description The origin of images to list. */
-        image_origin?: components["schemas"]["ResourceOrigin"] | null;
+        image_origin?: components["schemas"]["ResourceOrigin"];
         /** @description The categories of image to include. */
-        categories?: components["schemas"]["ImageCategory"][] | null;
+        categories?: components["schemas"]["ImageCategory"][];
         /** @description Whether to list intermediate images. */
-        is_intermediate?: boolean | null;
+        is_intermediate?: boolean;
         /** @description The board id to filter by. Use 'none' to find images without a board. */
-        board_id?: string | null;
+        board_id?: string;
         /** @description The page offset */
         offset?: number;
         /** @description The number of images per page */
@@ -9953,11 +10909,11 @@ export type operations = {
     parameters: {
       query?: {
         /** @description Whether to list all boards */
-        all?: boolean | null;
+        all?: boolean;
         /** @description The page offset */
-        offset?: number | null;
+        offset?: number;
         /** @description The number of boards per page */
-        limit?: number | null;
+        limit?: number;
       };
     };
     responses: {
@@ -10035,7 +10991,7 @@ export type operations = {
     parameters: {
       query?: {
         /** @description Permanently delete all images on the board */
-        include_images?: boolean | null;
+        include_images?: boolean;
       };
       path: {
         /** @description The id of board to delete */
@@ -10332,6 +11288,43 @@ export type operations = {
     };
   };
   /**
+   * Enqueue Graph
+   * @description Enqueues a graph for single execution.
+   */
+  enqueue_graph: {
+    parameters: {
+      path: {
+        /** @description The queue id to perform this operation on */
+        queue_id: string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["Body_enqueue_graph"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": unknown;
+        };
+      };
+      /** @description Created */
+      201: {
+        content: {
+          "application/json": components["schemas"]["EnqueueGraphResult"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  /**
    * Enqueue Batch
    * @description Processes a batch and enqueues the output graphs for execution.
    */
@@ -10351,7 +11344,7 @@ export type operations = {
       /** @description Successful Response */
       200: {
         content: {
-          "application/json": components["schemas"]["EnqueueBatchResult"];
+          "application/json": unknown;
         };
       };
       /** @description Created */
@@ -10378,9 +11371,9 @@ export type operations = {
         /** @description The number of items to fetch */
         limit?: number;
         /** @description The status of items to fetch */
-        status?: ("pending" | "in_progress" | "completed" | "failed" | "canceled") | null;
+        status?: "pending" | "in_progress" | "completed" | "failed" | "canceled";
         /** @description The pagination cursor */
-        cursor?: number | null;
+        cursor?: number;
         /** @description The pagination cursor priority */
         priority?: number;
       };
@@ -10554,7 +11547,7 @@ export type operations = {
       /** @description Successful Response */
       200: {
         content: {
-          "application/json": components["schemas"]["SessionQueueItem"] | null;
+          "application/json": components["schemas"]["SessionQueueItem"];
         };
       };
       /** @description Validation Error */
@@ -10580,7 +11573,7 @@ export type operations = {
       /** @description Successful Response */
       200: {
         content: {
-          "application/json": components["schemas"]["SessionQueueItem"] | null;
+          "application/json": components["schemas"]["SessionQueueItem"];
         };
       };
       /** @description Validation Error */

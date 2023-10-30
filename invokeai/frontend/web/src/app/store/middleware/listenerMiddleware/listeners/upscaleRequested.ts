@@ -6,7 +6,7 @@ import { addToast } from 'features/system/store/systemSlice';
 import { t } from 'i18next';
 import { queueApi } from 'services/api/endpoints/queue';
 import { startAppListening } from '..';
-import { BatchConfig, ImageDTO } from 'services/api/types';
+import { ImageDTO } from 'services/api/types';
 import { createIsAllowedToUpscaleSelector } from 'features/parameters/hooks/useIsAllowedToUpscale';
 
 export const upscaleRequested = createAction<{ imageDTO: ImageDTO }>(
@@ -44,23 +44,20 @@ export const addUpscaleRequestedListener = () => {
       const { esrganModelName } = state.postprocessing;
       const { autoAddBoardId } = state.gallery;
 
-      const enqueueBatchArg: BatchConfig = {
-        prepend: true,
-        batch: {
-          graph: buildAdHocUpscaleGraph({
-            image_name,
-            esrganModelName,
-            autoAddBoardId,
-          }),
-          runs: 1,
-        },
-      };
+      const graph = buildAdHocUpscaleGraph({
+        image_name,
+        esrganModelName,
+        autoAddBoardId,
+      });
 
       try {
         const req = dispatch(
-          queueApi.endpoints.enqueueBatch.initiate(enqueueBatchArg, {
-            fixedCacheKey: 'enqueueBatch',
-          })
+          queueApi.endpoints.enqueueGraph.initiate(
+            { graph, prepend: true },
+            {
+              fixedCacheKey: 'enqueueGraph',
+            }
+          )
         );
 
         const enqueueResult = await req.unwrap();
@@ -70,10 +67,7 @@ export const addUpscaleRequestedListener = () => {
           t('queue.graphQueued')
         );
       } catch (error) {
-        log.error(
-          { enqueueBatchArg: parseify(enqueueBatchArg) },
-          t('queue.graphFailedToQueue')
-        );
+        log.error({ graph: parseify(graph) }, t('queue.graphFailedToQueue'));
 
         // handle usage-related errors
         if (error instanceof Object) {

@@ -1,8 +1,7 @@
 import math
-from typing import Optional
 
+import PIL
 import torch
-from PIL import Image
 from torchvision.transforms.functional import InterpolationMode
 from torchvision.transforms.functional import resize as tv_resize
 
@@ -12,7 +11,7 @@ class AttentionMapSaver:
         self.token_ids = token_ids
         self.latents_shape = latents_shape
         # self.collated_maps = #torch.zeros([len(token_ids), latents_shape[0], latents_shape[1]])
-        self.collated_maps: dict[str, torch.Tensor] = {}
+        self.collated_maps = {}
 
     def clear_maps(self):
         self.collated_maps = {}
@@ -39,10 +38,9 @@ class AttentionMapSaver:
 
     def write_maps_to_disk(self, path: str):
         pil_image = self.get_stacked_maps_image()
-        if pil_image is not None:
-            pil_image.save(path, "PNG")
+        pil_image.save(path, "PNG")
 
-    def get_stacked_maps_image(self) -> Optional[Image.Image]:
+    def get_stacked_maps_image(self) -> PIL.Image:
         """
         Scale all collected attention maps to the same size, blend them together and return as an image.
         :return: An image containing a vertical stack of blended attention maps, one for each requested token.
@@ -97,4 +95,4 @@ class AttentionMapSaver:
             return None
 
         merged_bytes = merged.mul(0xFF).byte()
-        return Image.fromarray(merged_bytes.numpy(), mode="L")
+        return PIL.Image.fromarray(merged_bytes.numpy(), mode="L")

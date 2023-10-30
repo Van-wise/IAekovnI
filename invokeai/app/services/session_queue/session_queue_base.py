@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
+from invokeai.app.services.graph import Graph
 from invokeai.app.services.session_queue.session_queue_common import (
     QUEUE_ITEM_STATUS,
     Batch,
@@ -9,6 +10,7 @@ from invokeai.app.services.session_queue.session_queue_common import (
     CancelByQueueIDResult,
     ClearResult,
     EnqueueBatchResult,
+    EnqueueGraphResult,
     IsEmptyResult,
     IsFullResult,
     PruneResult,
@@ -16,7 +18,7 @@ from invokeai.app.services.session_queue.session_queue_common import (
     SessionQueueItemDTO,
     SessionQueueStatus,
 )
-from invokeai.app.services.shared.pagination import CursorPaginatedResults
+from invokeai.app.services.shared.models import CursorPaginatedResults
 
 
 class SessionQueueBase(ABC):
@@ -25,6 +27,11 @@ class SessionQueueBase(ABC):
     @abstractmethod
     def dequeue(self) -> Optional[SessionQueueItem]:
         """Dequeues the next session queue item."""
+        pass
+
+    @abstractmethod
+    def enqueue_graph(self, queue_id: str, graph: Graph, prepend: bool) -> EnqueueGraphResult:
+        """Enqueues a single graph for execution."""
         pass
 
     @abstractmethod

@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 import numpy as np
 from dynamicprompts.generators import CombinatorialPromptGenerator, RandomPromptGenerator
-from pydantic import field_validator
+from pydantic import validator
 
 from invokeai.app.invocations.primitives import StringCollectionOutput
 
@@ -21,10 +21,7 @@ from .baseinvocation import BaseInvocation, InputField, InvocationContext, UICom
 class DynamicPromptInvocation(BaseInvocation):
     """Parses a prompt using adieyal/dynamicprompts' random or combinatorial generator"""
 
-    prompt: str = InputField(
-        description="The prompt to parse with dynamicprompts",
-        ui_component=UIComponent.Textarea,
-    )
+    prompt: str = InputField(description="The prompt to parse with dynamicprompts", ui_component=UIComponent.Textarea)
     max_prompts: int = InputField(default=1, description="The number of prompts to generate")
     combinatorial: bool = InputField(default=False, description="Whether to use the combinatorial generator")
 
@@ -39,31 +36,21 @@ class DynamicPromptInvocation(BaseInvocation):
         return StringCollectionOutput(collection=prompts)
 
 
-@invocation(
-    "prompt_from_file",
-    title="Prompts from File",
-    tags=["prompt", "file"],
-    category="prompt",
-    version="1.0.0",
-)
+@invocation("prompt_from_file", title="Prompts from File", tags=["prompt", "file"], category="prompt", version="1.0.0")
 class PromptsFromFileInvocation(BaseInvocation):
     """Loads prompts from a text file"""
 
     file_path: str = InputField(description="Path to prompt text file")
     pre_prompt: Optional[str] = InputField(
-        default=None,
-        description="String to prepend to each prompt",
-        ui_component=UIComponent.Textarea,
+        default=None, description="String to prepend to each prompt", ui_component=UIComponent.Textarea
     )
     post_prompt: Optional[str] = InputField(
-        default=None,
-        description="String to append to each prompt",
-        ui_component=UIComponent.Textarea,
+        default=None, description="String to append to each prompt", ui_component=UIComponent.Textarea
     )
     start_line: int = InputField(default=1, ge=1, description="Line in the file to start start from")
     max_prompts: int = InputField(default=1, ge=0, description="Max lines to read from file (0=all)")
 
-    @field_validator("file_path")
+    @validator("file_path")
     def file_path_exists(cls, v):
         if not exists(v):
             raise ValueError(FileNotFoundError)
@@ -92,10 +79,6 @@ class PromptsFromFileInvocation(BaseInvocation):
 
     def invoke(self, context: InvocationContext) -> StringCollectionOutput:
         prompts = self.promptsFromFile(
-            self.file_path,
-            self.pre_prompt,
-            self.post_prompt,
-            self.start_line,
-            self.max_prompts,
+            self.file_path, self.pre_prompt, self.post_prompt, self.start_line, self.max_prompts
         )
         return StringCollectionOutput(collection=prompts)

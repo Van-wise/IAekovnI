@@ -3,7 +3,7 @@
 from typing import Literal
 
 import numpy as np
-from pydantic import ValidationInfo, field_validator
+from pydantic import validator
 
 from invokeai.app.invocations.primitives import FloatOutput, IntegerOutput
 
@@ -72,14 +72,7 @@ class RandomIntInvocation(BaseInvocation):
         return IntegerOutput(value=np.random.randint(self.low, self.high))
 
 
-@invocation(
-    "rand_float",
-    title="Random Float",
-    tags=["math", "float", "random"],
-    category="math",
-    version="1.0.1",
-    use_cache=False,
-)
+@invocation("rand_float", title="Random Float", tags=["math", "float", "random"], category="math", version="1.0.0")
 class RandomFloatInvocation(BaseInvocation):
     """Outputs a single random float"""
 
@@ -185,13 +178,13 @@ class IntegerMathInvocation(BaseInvocation):
     a: int = InputField(default=0, description=FieldDescriptions.num_1)
     b: int = InputField(default=0, description=FieldDescriptions.num_2)
 
-    @field_validator("b")
-    def no_unrepresentable_results(cls, v: int, info: ValidationInfo):
-        if info.data["operation"] == "DIV" and v == 0:
+    @validator("b")
+    def no_unrepresentable_results(cls, v, values):
+        if values["operation"] == "DIV" and v == 0:
             raise ValueError("Cannot divide by zero")
-        elif info.data["operation"] == "MOD" and v == 0:
+        elif values["operation"] == "MOD" and v == 0:
             raise ValueError("Cannot divide by zero")
-        elif info.data["operation"] == "EXP" and v < 0:
+        elif values["operation"] == "EXP" and v < 0:
             raise ValueError("Result of exponentiation is not an integer")
         return v
 
@@ -259,13 +252,13 @@ class FloatMathInvocation(BaseInvocation):
     a: float = InputField(default=0, description=FieldDescriptions.num_1)
     b: float = InputField(default=0, description=FieldDescriptions.num_2)
 
-    @field_validator("b")
-    def no_unrepresentable_results(cls, v: float, info: ValidationInfo):
-        if info.data["operation"] == "DIV" and v == 0:
+    @validator("b")
+    def no_unrepresentable_results(cls, v, values):
+        if values["operation"] == "DIV" and v == 0:
             raise ValueError("Cannot divide by zero")
-        elif info.data["operation"] == "EXP" and info.data["a"] == 0 and v < 0:
+        elif values["operation"] == "EXP" and values["a"] == 0 and v < 0:
             raise ValueError("Cannot raise zero to a negative power")
-        elif info.data["operation"] == "EXP" and type(info.data["a"] ** v) is complex:
+        elif values["operation"] == "EXP" and type(values["a"] ** v) is complex:
             raise ValueError("Root operation resulted in a complex number")
         return v
 

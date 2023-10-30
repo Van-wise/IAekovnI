@@ -7,11 +7,10 @@ import numpy as np
 import torch
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from PIL import Image
-from pydantic import ConfigDict
 from realesrgan import RealESRGANer
 
 from invokeai.app.invocations.primitives import ImageField, ImageOutput
-from invokeai.app.services.image_records.image_records_common import ImageCategory, ResourceOrigin
+from invokeai.app.models.image import ImageCategory, ResourceOrigin
 from invokeai.backend.util.devices import choose_torch_device
 
 from .baseinvocation import BaseInvocation, InputField, InvocationContext, invocation
@@ -38,8 +37,6 @@ class ESRGANInvocation(BaseInvocation):
     tile_size: int = InputField(
         default=400, ge=0, description="Tile size for tiled ESRGAN upscaling (0=tiling disabled)"
     )
-
-    model_config = ConfigDict(protected_namespaces=())
 
     def invoke(self, context: InvocationContext) -> ImageOutput:
         image = context.services.images.get_pil_image(self.image.image_name)

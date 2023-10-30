@@ -9,10 +9,10 @@ from PIL import Image, ImageChops, ImageFilter, ImageOps
 
 from invokeai.app.invocations.metadata import CoreMetadata
 from invokeai.app.invocations.primitives import BoardField, ColorField, ImageField, ImageOutput
-from invokeai.app.services.image_records.image_records_common import ImageCategory, ResourceOrigin
 from invokeai.backend.image_util.invisible_watermark import InvisibleWatermark
 from invokeai.backend.image_util.safety_checker import SafetyChecker
 
+from ..models.image import ImageCategory, ResourceOrigin
 from .baseinvocation import BaseInvocation, FieldDescriptions, Input, InputField, InvocationContext, invocation
 
 
@@ -36,13 +36,7 @@ class ShowImageInvocation(BaseInvocation):
         )
 
 
-@invocation(
-    "blank_image",
-    title="Blank Image",
-    tags=["image"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("blank_image", title="Blank Image", tags=["image"], category="image", version="1.0.0")
 class BlankImageInvocation(BaseInvocation):
     """Creates a blank image and forwards it to the pipeline"""
 
@@ -71,13 +65,7 @@ class BlankImageInvocation(BaseInvocation):
         )
 
 
-@invocation(
-    "img_crop",
-    title="Crop Image",
-    tags=["image", "crop"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("img_crop", title="Crop Image", tags=["image", "crop"], category="image", version="1.0.0")
 class ImageCropInvocation(BaseInvocation):
     """Crops an image to a specified box. The box can be outside of the image."""
 
@@ -110,13 +98,7 @@ class ImageCropInvocation(BaseInvocation):
         )
 
 
-@invocation(
-    "img_paste",
-    title="Paste Image",
-    tags=["image", "paste"],
-    category="image",
-    version="1.0.1",
-)
+@invocation("img_paste", title="Paste Image", tags=["image", "paste"], category="image", version="1.0.1")
 class ImagePasteInvocation(BaseInvocation):
     """Pastes an image into another image."""
 
@@ -169,13 +151,7 @@ class ImagePasteInvocation(BaseInvocation):
         )
 
 
-@invocation(
-    "tomask",
-    title="Mask from Alpha",
-    tags=["image", "mask"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("tomask", title="Mask from Alpha", tags=["image", "mask"], category="image", version="1.0.0")
 class MaskFromAlphaInvocation(BaseInvocation):
     """Extracts the alpha channel of an image as a mask."""
 
@@ -206,13 +182,7 @@ class MaskFromAlphaInvocation(BaseInvocation):
         )
 
 
-@invocation(
-    "img_mul",
-    title="Multiply Images",
-    tags=["image", "multiply"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("img_mul", title="Multiply Images", tags=["image", "multiply"], category="image", version="1.0.0")
 class ImageMultiplyInvocation(BaseInvocation):
     """Multiplies two images together using `PIL.ImageChops.multiply()`."""
 
@@ -245,13 +215,7 @@ class ImageMultiplyInvocation(BaseInvocation):
 IMAGE_CHANNELS = Literal["A", "R", "G", "B"]
 
 
-@invocation(
-    "img_chan",
-    title="Extract Image Channel",
-    tags=["image", "channel"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("img_chan", title="Extract Image Channel", tags=["image", "channel"], category="image", version="1.0.0")
 class ImageChannelInvocation(BaseInvocation):
     """Gets a channel from an image."""
 
@@ -283,13 +247,7 @@ class ImageChannelInvocation(BaseInvocation):
 IMAGE_MODES = Literal["L", "RGB", "RGBA", "CMYK", "YCbCr", "LAB", "HSV", "I", "F"]
 
 
-@invocation(
-    "img_conv",
-    title="Convert Image Mode",
-    tags=["image", "convert"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("img_conv", title="Convert Image Mode", tags=["image", "convert"], category="image", version="1.0.0")
 class ImageConvertInvocation(BaseInvocation):
     """Converts an image to a different mode."""
 
@@ -318,13 +276,7 @@ class ImageConvertInvocation(BaseInvocation):
         )
 
 
-@invocation(
-    "img_blur",
-    title="Blur Image",
-    tags=["image", "blur"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("img_blur", title="Blur Image", tags=["image", "blur"], category="image", version="1.0.0")
 class ImageBlurInvocation(BaseInvocation):
     """Blurs an image"""
 
@@ -378,13 +330,7 @@ PIL_RESAMPLING_MAP = {
 }
 
 
-@invocation(
-    "img_resize",
-    title="Resize Image",
-    tags=["image", "resize"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("img_resize", title="Resize Image", tags=["image", "resize"], category="image", version="1.0.0")
 class ImageResizeInvocation(BaseInvocation):
     """Resizes an image to specific dimensions"""
 
@@ -413,7 +359,7 @@ class ImageResizeInvocation(BaseInvocation):
             node_id=self.id,
             session_id=context.graph_execution_state_id,
             is_intermediate=self.is_intermediate,
-            metadata=self.metadata.model_dump() if self.metadata else None,
+            metadata=self.metadata.dict() if self.metadata else None,
             workflow=self.workflow,
         )
 
@@ -424,13 +370,7 @@ class ImageResizeInvocation(BaseInvocation):
         )
 
 
-@invocation(
-    "img_scale",
-    title="Scale Image",
-    tags=["image", "scale"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("img_scale", title="Scale Image", tags=["image", "scale"], category="image", version="1.0.0")
 class ImageScaleInvocation(BaseInvocation):
     """Scales an image by a factor"""
 
@@ -471,13 +411,7 @@ class ImageScaleInvocation(BaseInvocation):
         )
 
 
-@invocation(
-    "img_lerp",
-    title="Lerp Image",
-    tags=["image", "lerp"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("img_lerp", title="Lerp Image", tags=["image", "lerp"], category="image", version="1.0.0")
 class ImageLerpInvocation(BaseInvocation):
     """Linear interpolation of all pixels of an image"""
 
@@ -510,13 +444,7 @@ class ImageLerpInvocation(BaseInvocation):
         )
 
 
-@invocation(
-    "img_ilerp",
-    title="Inverse Lerp Image",
-    tags=["image", "ilerp"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("img_ilerp", title="Inverse Lerp Image", tags=["image", "ilerp"], category="image", version="1.0.0")
 class ImageInverseLerpInvocation(BaseInvocation):
     """Inverse linear interpolation of all pixels of an image"""
 
@@ -528,7 +456,7 @@ class ImageInverseLerpInvocation(BaseInvocation):
         image = context.services.images.get_pil_image(self.image.image_name)
 
         image_arr = numpy.asarray(image, dtype=numpy.float32)
-        image_arr = numpy.minimum(numpy.maximum(image_arr - self.min, 0) / float(self.max - self.min), 1) * 255  # type: ignore [assignment]
+        image_arr = numpy.minimum(numpy.maximum(image_arr - self.min, 0) / float(self.max - self.min), 1) * 255
 
         ilerp_image = Image.fromarray(numpy.uint8(image_arr))
 
@@ -549,13 +477,7 @@ class ImageInverseLerpInvocation(BaseInvocation):
         )
 
 
-@invocation(
-    "img_nsfw",
-    title="Blur NSFW Image",
-    tags=["image", "nsfw"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("img_nsfw", title="Blur NSFW Image", tags=["image", "nsfw"], category="image", version="1.0.0")
 class ImageNSFWBlurInvocation(BaseInvocation):
     """Add blur to NSFW-flagged images"""
 
@@ -583,7 +505,7 @@ class ImageNSFWBlurInvocation(BaseInvocation):
             node_id=self.id,
             session_id=context.graph_execution_state_id,
             is_intermediate=self.is_intermediate,
-            metadata=self.metadata.model_dump() if self.metadata else None,
+            metadata=self.metadata.dict() if self.metadata else None,
             workflow=self.workflow,
         )
 
@@ -593,7 +515,7 @@ class ImageNSFWBlurInvocation(BaseInvocation):
             height=image_dto.height,
         )
 
-    def _get_caution_img(self) -> Image.Image:
+    def _get_caution_img(self) -> Image:
         import invokeai.app.assets.images as image_assets
 
         caution = Image.open(Path(image_assets.__path__[0]) / "caution.png")
@@ -601,11 +523,7 @@ class ImageNSFWBlurInvocation(BaseInvocation):
 
 
 @invocation(
-    "img_watermark",
-    title="Add Invisible Watermark",
-    tags=["image", "watermark"],
-    category="image",
-    version="1.0.0",
+    "img_watermark", title="Add Invisible Watermark", tags=["image", "watermark"], category="image", version="1.0.0"
 )
 class ImageWatermarkInvocation(BaseInvocation):
     """Add an invisible watermark to an image"""
@@ -626,7 +544,7 @@ class ImageWatermarkInvocation(BaseInvocation):
             node_id=self.id,
             session_id=context.graph_execution_state_id,
             is_intermediate=self.is_intermediate,
-            metadata=self.metadata.model_dump() if self.metadata else None,
+            metadata=self.metadata.dict() if self.metadata else None,
             workflow=self.workflow,
         )
 
@@ -637,13 +555,7 @@ class ImageWatermarkInvocation(BaseInvocation):
         )
 
 
-@invocation(
-    "mask_edge",
-    title="Mask Edge",
-    tags=["image", "mask", "inpaint"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("mask_edge", title="Mask Edge", tags=["image", "mask", "inpaint"], category="image", version="1.0.0")
 class MaskEdgeInvocation(BaseInvocation):
     """Applies an edge mask to an image"""
 
@@ -689,11 +601,7 @@ class MaskEdgeInvocation(BaseInvocation):
 
 
 @invocation(
-    "mask_combine",
-    title="Combine Masks",
-    tags=["image", "mask", "multiply"],
-    category="image",
-    version="1.0.0",
+    "mask_combine", title="Combine Masks", tags=["image", "mask", "multiply"], category="image", version="1.0.0"
 )
 class MaskCombineInvocation(BaseInvocation):
     """Combine two masks together by multiplying them using `PIL.ImageChops.multiply()`."""
@@ -724,13 +632,7 @@ class MaskCombineInvocation(BaseInvocation):
         )
 
 
-@invocation(
-    "color_correct",
-    title="Color Correct",
-    tags=["image", "color"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("color_correct", title="Color Correct", tags=["image", "color"], category="image", version="1.0.0")
 class ColorCorrectInvocation(BaseInvocation):
     """
     Shifts the colors of a target image to match the reference image, optionally
@@ -840,13 +742,7 @@ class ColorCorrectInvocation(BaseInvocation):
         )
 
 
-@invocation(
-    "img_hue_adjust",
-    title="Adjust Image Hue",
-    tags=["image", "hue"],
-    category="image",
-    version="1.0.0",
-)
+@invocation("img_hue_adjust", title="Adjust Image Hue", tags=["image", "hue"], category="image", version="1.0.0")
 class ImageHueAdjustmentInvocation(BaseInvocation):
     """Adjusts the Hue of an image."""
 
@@ -1084,7 +980,7 @@ class SaveImageInvocation(BaseInvocation):
 
     image: ImageField = InputField(description=FieldDescriptions.image)
     board: Optional[BoardField] = InputField(default=None, description=FieldDescriptions.board, input=Input.Direct)
-    metadata: Optional[CoreMetadata] = InputField(
+    metadata: CoreMetadata = InputField(
         default=None,
         description=FieldDescriptions.core_metadata,
         ui_hidden=True,
@@ -1101,7 +997,7 @@ class SaveImageInvocation(BaseInvocation):
             node_id=self.id,
             session_id=context.graph_execution_state_id,
             is_intermediate=self.is_intermediate,
-            metadata=self.metadata.model_dump() if self.metadata else None,
+            metadata=self.metadata.dict() if self.metadata else None,
             workflow=self.workflow,
         )
 

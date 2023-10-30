@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional
 
 from dynamicprompts.generators import CombinatorialPromptGenerator, RandomPromptGenerator
 from fastapi import Body
@@ -27,7 +27,6 @@ async def parse_dynamicprompts(
     combinatorial: bool = Body(default=True, description="Whether to use the combinatorial generator"),
 ) -> DynamicPromptsResponse:
     """Creates a batch process"""
-    generator: Union[RandomPromptGenerator, CombinatorialPromptGenerator]
     try:
         error: Optional[str] = None
         if combinatorial:

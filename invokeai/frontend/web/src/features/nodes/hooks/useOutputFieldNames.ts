@@ -5,7 +5,6 @@ import { defaultSelectorOptions } from 'app/store/util/defaultMemoizeOptions';
 import { map } from 'lodash-es';
 import { useMemo } from 'react';
 import { isInvocationNode } from '../types/types';
-import { getSortedFilteredFieldNames } from '../util/getSortedFilteredFieldNames';
 
 export const useOutputFieldNames = (nodeId: string) => {
   const selector = useMemo(
@@ -21,8 +20,11 @@ export const useOutputFieldNames = (nodeId: string) => {
           if (!nodeTemplate) {
             return [];
           }
-
-          return getSortedFilteredFieldNames(map(nodeTemplate.outputs));
+          return map(nodeTemplate.outputs)
+            .filter((field) => !field.ui_hidden)
+            .sort((a, b) => (a.ui_order ?? 0) - (b.ui_order ?? 0))
+            .map((field) => field.name)
+            .filter((fieldName) => fieldName !== 'is_intermediate');
         },
         defaultSelectorOptions
       ),

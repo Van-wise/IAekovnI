@@ -8,7 +8,7 @@ import numpy as np
 from mediapipe.python.solutions.face_mesh import FaceMesh  # type: ignore[import]
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 from PIL.Image import Image as ImageType
-from pydantic import field_validator
+from pydantic import validator
 
 import invokeai.assets.fonts as font_assets
 from invokeai.app.invocations.baseinvocation import (
@@ -20,7 +20,7 @@ from invokeai.app.invocations.baseinvocation import (
     invocation_output,
 )
 from invokeai.app.invocations.primitives import ImageField, ImageOutput
-from invokeai.app.services.image_records.image_records_common import ImageCategory, ResourceOrigin
+from invokeai.app.models.image import ImageCategory, ResourceOrigin
 
 
 @invocation_output("face_mask_output")
@@ -550,7 +550,7 @@ class FaceMaskInvocation(BaseInvocation):
     )
     invert_mask: bool = InputField(default=False, description="Toggle to invert the mask")
 
-    @field_validator("face_ids")
+    @validator("face_ids")
     def validate_comma_separated_ints(cls, v) -> str:
         comma_separated_ints_regex = re.compile(r"^\d*(,\d+)*$")
         if comma_separated_ints_regex.match(v) is None:

@@ -1,5 +1,4 @@
 import datetime
-import typing
 import uuid
 
 import numpy as np
@@ -28,8 +27,3 @@ def get_random_seed():
 def uuid_string():
     res = uuid.uuid4()
     return str(res)
-
-
-def is_optional(value: typing.Any):
-    """Checks if a value is typed as Optional. Note that Optional is sugar for Union[x, None]."""
-    return typing.get_origin(value) is typing.Union and type(None) in typing.get_args(value)

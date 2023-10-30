@@ -13,11 +13,11 @@ From https://github.com/tiangolo/fastapi/discussions/8882#discussioncomment-5154
 
 
 class BaseModelExcludeNull(BaseModel):
-    def model_dump(self, *args, **kwargs) -> dict[str, Any]:
+    def dict(self, *args, **kwargs) -> dict[str, Any]:
         """
         Override the default dict method to exclude None values in the response
         """
         kwargs.pop("exclude_none", None)
-        return super().model_dump(*args, exclude_none=True, **kwargs)
+        return super().dict(*args, exclude_none=True, **kwargs)
 
     pass

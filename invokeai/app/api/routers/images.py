@@ -8,9 +8,9 @@ from PIL import Image
 from pydantic import BaseModel, Field
 
 from invokeai.app.invocations.metadata import ImageMetadata
-from invokeai.app.services.image_records.image_records_common import ImageCategory, ImageRecordChanges, ResourceOrigin
-from invokeai.app.services.images.images_common import ImageDTO, ImageUrlsDTO
-from invokeai.app.services.shared.pagination import OffsetPaginatedResults
+from invokeai.app.models.image import ImageCategory, ResourceOrigin
+from invokeai.app.services.image_record_storage import OffsetPaginatedResults
+from invokeai.app.services.models.image_record import ImageDTO, ImageRecordChanges, ImageUrlsDTO
 
 from ..dependencies import ApiDependencies
 
@@ -42,7 +42,7 @@ async def upload_image(
     crop_visible: Optional[bool] = Query(default=False, description="Whether to crop the image"),
 ) -> ImageDTO:
     """Uploads an image"""
-    if not file.content_type or not file.content_type.startswith("image"):
+    if not file.content_type.startswith("image"):
         raise HTTPException(status_code=415, detail="Not an image")
 
     contents = await file.read()
@@ -87,7 +87,7 @@ async def delete_image(
         pass
 
 
-@images_router.delete("/intermediates", operation_id="clear_intermediates")
+@images_router.post("/clear-intermediates", operation_id="clear_intermediates")
 async def clear_intermediates() -> int:
     """Clears all intermediates"""
 
@@ -96,17 +96,6 @@ async def clear_intermediates() -> int:
         return count_deleted
     except Exception:
         raise HTTPException(status_code=500, detail="Failed to clear intermediates")
-        pass
-
-
-@images_router.get("/intermediates", operation_id="get_intermediates_count")
-async def get_intermediates_count() -> int:
-    """Gets the count of intermediate images"""
-
-    try:
-        return ApiDependencies.invoker.services.images.get_intermediates_count()
-    except Exception:
-        raise HTTPException(status_code=500, detail="Failed to get intermediates")
         pass
 
 

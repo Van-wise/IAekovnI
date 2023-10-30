@@ -1,13 +1,11 @@
 import { useAppToaster } from 'app/components/Toaster';
-import { useImageUrlToBlob } from 'common/hooks/useImageUrlToBlob';
-import { copyBlobToClipboard } from 'features/system/util/copyBlobToClipboard';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { copyBlobToClipboard } from 'features/system/util/copyBlobToClipboard';
 
 export const useCopyImageToClipboard = () => {
   const toaster = useAppToaster();
   const { t } = useTranslation();
-  const imageUrlToBlob = useImageUrlToBlob();
 
   const isClipboardAPIAvailable = useMemo(() => {
     return Boolean(navigator.clipboard) && Boolean(window.ClipboardItem);
@@ -25,13 +23,15 @@ export const useCopyImageToClipboard = () => {
         });
       }
       try {
-        const blob = await imageUrlToBlob(image_url);
+        const getImageBlob = async () => {
+          const response = await fetch(image_url);
+          if (!response.ok) {
+            throw new Error(`Problem retrieving image data`);
+          }
+          return await response.blob();
+        };
 
-        if (!blob) {
-          throw new Error('Unable to create Blob');
-        }
-
-        copyBlobToClipboard(blob);
+        copyBlobToClipboard(getImageBlob());
 
         toaster({
           title: t('toast.imageCopied'),
@@ -49,7 +49,7 @@ export const useCopyImageToClipboard = () => {
         });
       }
     },
-    [imageUrlToBlob, isClipboardAPIAvailable, t, toaster]
+    [isClipboardAPIAvailable, t, toaster]
   );
 
   return { isClipboardAPIAvailable, copyImageToClipboard };

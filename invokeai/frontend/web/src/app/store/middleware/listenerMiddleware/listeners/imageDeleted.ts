@@ -151,9 +151,7 @@ export const addRequestedSingleImageDeletionListener = () => {
 
       if (wasImageDeleted) {
         dispatch(
-          api.util.invalidateTags([
-            { type: 'Board', id: imageDTO.board_id ?? 'none' },
-          ])
+          api.util.invalidateTags([{ type: 'Board', id: imageDTO.board_id }])
         );
       }
     },

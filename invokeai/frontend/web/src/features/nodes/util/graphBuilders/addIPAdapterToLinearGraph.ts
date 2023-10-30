@@ -32,24 +32,14 @@ export const addIPAdapterToLinearGraph = (
       type: 'collect',
       is_intermediate: true,
     };
-    graph.nodes[IP_ADAPTER_COLLECT] = ipAdapterCollectNode;
+    graph.nodes[ipAdapterCollectNode.id] = ipAdapterCollectNode;
     graph.edges.push({
-      source: { node_id: IP_ADAPTER_COLLECT, field: 'collection' },
+      source: { node_id: ipAdapterCollectNode.id, field: 'collection' },
       destination: {
         node_id: baseNodeId,
         field: 'ip_adapter',
       },
     });
-
-    if (CANVAS_COHERENCE_DENOISE_LATENTS in graph.nodes) {
-      graph.edges.push({
-        source: { node_id: IP_ADAPTER_COLLECT, field: 'collection' },
-        destination: {
-          node_id: CANVAS_COHERENCE_DENOISE_LATENTS,
-          field: 'ip_adapter',
-        },
-      });
-    }
 
     validIPAdapters.forEach((ipAdapter) => {
       if (!ipAdapter.model) {
@@ -97,6 +87,16 @@ export const addIPAdapterToLinearGraph = (
           field: 'item',
         },
       });
+
+      if (CANVAS_COHERENCE_DENOISE_LATENTS in graph.nodes) {
+        graph.edges.push({
+          source: { node_id: ipAdapterNode.id, field: 'ip_adapter' },
+          destination: {
+            node_id: CANVAS_COHERENCE_DENOISE_LATENTS,
+            field: 'ip_adapter',
+          },
+        });
+      }
     });
   }
 };

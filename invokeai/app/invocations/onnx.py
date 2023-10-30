@@ -9,18 +9,18 @@ from typing import List, Literal, Optional, Union
 import numpy as np
 import torch
 from diffusers.image_processor import VaeImageProcessor
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, Field, validator
 from tqdm import tqdm
 
 from invokeai.app.invocations.metadata import CoreMetadata
 from invokeai.app.invocations.primitives import ConditioningField, ConditioningOutput, ImageField, ImageOutput
-from invokeai.app.services.image_records.image_records_common import ImageCategory, ResourceOrigin
 from invokeai.app.util.step_callback import stable_diffusion_step_callback
 from invokeai.backend import BaseModelType, ModelType, SubModelType
 
 from ...backend.model_management import ONNXModelPatcher
 from ...backend.stable_diffusion import PipelineIntermediateState
 from ...backend.util import choose_torch_device
+from ..models.image import ImageCategory, ResourceOrigin
 from .baseinvocation import (
     BaseInvocation,
     BaseInvocationOutput,
@@ -63,17 +63,14 @@ class ONNXPromptInvocation(BaseInvocation):
 
     def invoke(self, context: InvocationContext) -> ConditioningOutput:
         tokenizer_info = context.services.model_manager.get_model(
-            **self.clip.tokenizer.model_dump(),
+            **self.clip.tokenizer.dict(),
         )
         text_encoder_info = context.services.model_manager.get_model(
-            **self.clip.text_encoder.model_dump(),
+            **self.clip.text_encoder.dict(),
         )
         with tokenizer_info as orig_tokenizer, text_encoder_info as text_encoder:  # , ExitStack() as stack:
             loras = [
-                (
-                    context.services.model_manager.get_model(**lora.model_dump(exclude={"weight"})).context.model,
-                    lora.weight,
-                )
+                (context.services.model_manager.get_model(**lora.dict(exclude={"weight"})).context.model, lora.weight)
                 for lora in self.clip.loras
             ]
 
@@ -178,14 +175,14 @@ class ONNXTextToLatentsInvocation(BaseInvocation):
         description=FieldDescriptions.unet,
         input=Input.Connection,
     )
-    control: Union[ControlField, list[ControlField]] = InputField(
+    control: Optional[Union[ControlField, list[ControlField]]] = InputField(
         default=None,
         description=FieldDescriptions.control,
     )
     # seamless:   bool = InputField(default=False, description="Whether or not to generate an image that can tile without seams", )
     # seamless_axes: str = InputField(default="", description="The axes to tile the image on, 'x' and/or 'y'")
 
-    @field_validator("cfg_scale")
+    @validator("cfg_scale")
     def ge_one(cls, v):
         """validate that all cfg_scale values are >= 1"""
         if isinstance(v, list):
@@ -244,7 +241,7 @@ class ONNXTextToLatentsInvocation(BaseInvocation):
             stable_diffusion_step_callback(
                 context=context,
                 intermediate_state=intermediate_state,
-                node=self.model_dump(),
+                node=self.dict(),
                 source_node_id=source_node_id,
             )
 
@@ -257,15 +254,12 @@ class ONNXTextToLatentsInvocation(BaseInvocation):
                 eta=0.0,
             )
 
-        unet_info = context.services.model_manager.get_model(**self.unet.unet.model_dump())
+        unet_info = context.services.model_manager.get_model(**self.unet.unet.dict())
 
         with unet_info as unet:  # , ExitStack() as stack:
             # loras = [(stack.enter_context(context.services.model_manager.get_model(**lora.dict(exclude={"weight"}))), lora.weight) for lora in self.unet.loras]
             loras = [
-                (
-                    context.services.model_manager.get_model(**lora.model_dump(exclude={"weight"})).context.model,
-                    lora.weight,
-                )
+                (context.services.model_manager.get_model(**lora.dict(exclude={"weight"})).context.model, lora.weight)
                 for lora in self.unet.loras
             ]
 
@@ -352,7 +346,7 @@ class ONNXLatentsToImageInvocation(BaseInvocation):
             raise Exception(f"Expected vae_decoder, found: {self.vae.vae.model_type}")
 
         vae_info = context.services.model_manager.get_model(
-            **self.vae.vae.model_dump(),
+            **self.vae.vae.dict(),
         )
 
         # clear memory as vae decode can request a lot
@@ -381,7 +375,7 @@ class ONNXLatentsToImageInvocation(BaseInvocation):
             node_id=self.id,
             session_id=context.graph_execution_state_id,
             is_intermediate=self.is_intermediate,
-            metadata=self.metadata.model_dump() if self.metadata else None,
+            metadata=self.metadata.dict() if self.metadata else None,
             workflow=self.workflow,
         )
 
@@ -408,8 +402,6 @@ class OnnxModelField(BaseModel):
     model_name: str = Field(description="Name of the model")
     base_model: BaseModelType = Field(description="Base model")
     model_type: ModelType = Field(description="Model Type")
-
-    model_config = ConfigDict(protected_namespaces=())
 
 
 @invocation("onnx_model_loader", title="ONNX Main Model", tags=["onnx", "model"], category="model", version="1.0.0")
